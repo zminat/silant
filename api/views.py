@@ -121,26 +121,22 @@ class MachineViewSet(ReadOnlyModelViewSet):
 
     def get_queryset(self):
         user = self.request.user
-        queryset = Machine.objects.all()
 
-        # Получаем параметры из URL
-        service_company_pk = self.kwargs.get('service_company_pk')
-        user_pk = self.kwargs.get('pk')  # параметр для /api/user/<int:pk>/machine
+        if not user.is_authenticated:
+            return Machine.objects.none()
 
-        # Применяем фильтрацию по сервисной компании, если указана
-        if service_company_pk:
-            queryset = queryset.filter(service_company_id=service_company_pk)
+        # Суперпользователю показываем все машины
+        if user.is_superuser:
+            return Machine.objects.all()
 
-        # Применяем фильтрацию по пользователю, если указана
-        if user_pk:
-            queryset = queryset.filter(client_id=user_pk)
+        # Сервисной компании показываем закрепленные за ней машины
+        service_company = ServiceCompany.objects.filter(service_manager=user).first()
+        if service_company:
+            return Machine.objects.filter(service_company=service_company)
 
-        # Проверка прав доступа
-        if user.is_superuser or user.has_perm('machines.view_machine'):
-            return queryset
+        # Обычным клиентам показываем только их машины
+        return Machine.objects.filter(client=user)
 
-        # Для пользователей без явных разрешений ограничиваем доступ
-        return Machine.objects.none()
 
     def get_permissions(self):
         """
@@ -151,46 +147,52 @@ class MachineViewSet(ReadOnlyModelViewSet):
 
 class MaintenanceViewSet(ReadOnlyModelViewSet):
     serializer_class = MaintenanceSerializer
+    permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
         user = self.request.user
 
-        # Для суперпользователей возвращаем все объекты
+        # Проверяем аутентификацию
+        if not user.is_authenticated:
+            return Maintenance.objects.none()
+
+        # Для суперпользователя показываем все ТО
         if user.is_superuser:
             return Maintenance.objects.all()
 
-        # Зарегистрированным пользователям возвращаем только те объекты, к которым у них есть доступ
-        # на основе их разрешений
-        if user.has_perm('maintenance.view_maintenance'):
-            return Maintenance.objects.all()
+        # Сервисной компании показываем ТО закрепленных за ней машин
+        service_company = ServiceCompany.objects.filter(service_manager=user).first()
+        if service_company:
+            return Maintenance.objects.filter(machine__service_company=service_company)
 
-        # Для пользователей без явных разрешений ограничиваем доступ
-        return Maintenance.objects.none()
+        # Для клиентов показываем ТО только их машин
+        return Maintenance.objects.filter(machine__client=user)
 
     def get_permissions(self):
-        """
-        Возвращает разрешения в зависимости от действия.
-        """
-        return [IsAuthenticated(), CustomDjangoPermission()]
+        return [IsAuthenticated()]
 
 
 class ClaimViewSet(ReadOnlyModelViewSet):
     serializer_class = ClaimSerializer
+    permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
         user = self.request.user
 
-        # Для суперпользователей возвращаем все объекты
+        if not user.is_authenticated:
+            return Claim.objects.none()
+
+        # Суперпользователю показываем все рекламации
         if user.is_superuser:
             return Claim.objects.all()
 
-        # Зарегистрированным пользователям возвращаем только те объекты, к которым у них есть доступ
-        # на основе их разрешений
-        if user.has_perm('claims.view_claim'):
-            return Claim.objects.all()
+        # Сервисной компании показываем рекламации закрепленных за ней машин
+        service_company = ServiceCompany.objects.filter(service_manager=user).first()
+        if service_company:
+            return Claim.objects.filter(machine__service_company=service_company)
 
-        # Для пользователей без явных разрешений ограничиваем доступ
-        return Claim.objects.none()
+        # Обычным клиентам показываем только их машины
+        return Claim.objects.filter(machine__client=user)
 
     def get_permissions(self):
         """

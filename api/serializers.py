@@ -66,7 +66,7 @@ class ServiceCompanySerializer(serializers.ModelSerializer):
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ('id', 'username', 'role')
+        fields = ('id', 'username')#, 'role')
 
 # Сериализатор для технического обслуживания
 class MaintenanceSerializer(serializers.ModelSerializer):
