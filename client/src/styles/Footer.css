@@ -1,0 +1,50 @@
+footer {
+    background-color: var(--blue);
+    color: white;
+}
+
+.main-container{
+    height: 70px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.contacts {
+    margin-left: 40px;
+    display: flex;
+    align-items: center;
+}
+
+.telephone {
+    color: white;
+    margin-right: 40px;
+}
+
+.sociallink svg {
+    width: 25px;
+    height: 25px;
+}
+
+.footer-text {
+    margin-right: 45px;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    text-align: right;
+}
+
+.footer-text span,
+.footer-text p {
+    font-family: "PT Astra Sans", sans-serif;
+    font-weight: normal;
+    font-size: 14px;
+    line-height: 1.2;
+    margin: 0;
+}
+
+.footer-text p {
+    font-size: 12px;
+    margin-top: 10px;
+    line-height: 1.2;
+}

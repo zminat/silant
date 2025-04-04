@@ -1,0 +1,104 @@
+#root {
+    max-width: 100%;
+    padding: 0;
+}
+
+.header {
+    display: block;
+    unicode-bidi: isolate;
+    background-color: var(--background-color);
+    max-width: 100%;
+    box-shadow: none;
+    padding: 0;
+}
+
+.main-container{
+    height: 70px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.left-side {
+    min-width: 0;
+    margin-left: 40px;
+}
+
+.left-side img {
+    width: 150px;
+    height: 100%;
+    display: block;
+    object-fit: contain;
+}
+
+.right-side {
+    display: flex;
+    align-items: center;
+    margin-right: 40px;
+}
+
+.right_buttons_but {
+    display: flex;
+    align-items: center;
+}
+
+.right_buttons_but a {
+    display: -webkit-flex;
+    display: -ms-flexbox;
+    display: flex;
+    -webkit-justify-content: center;
+    -ms-flex-pack: center;
+    justify-content: center;
+    -webkit-align-items: center;
+    -ms-flex-align: center;
+    align-items: center;
+}
+
+.header-telephone {
+    color: #3d3d3d;
+    font-family: "PT Astra Sans", sans-serif;
+    font-weight: bold;
+    font-size: 14px;
+    line-height: 17px;
+    letter-spacing: 0.01em;
+    margin-right: 10px;
+}
+
+.login-button {
+    font-family: "PT Astra Sans", sans-serif;
+    color: white;
+    background-color: var(--red);
+    border: none;
+    font-weight: bold;
+    height: 40px;
+    font-size: 14px;
+    padding-left: 30px;
+    padding-right: 30px;
+    margin-left: 10px;
+}
+
+.login-button:hover {
+    background-color: var(--red-hover);
+}
+
+.header-content {
+    height: 80px;
+    max-width: 1280px;
+    z-index: 2000;
+    position: fixed;
+    top: 0;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0);
+    transition: background-color .3s linear;
+}
+
+.header-title {
+    font-family: "PT Astra Sans", sans-serif;
+    font-weight: bold;
+    color: #163d6c;
+    font-size: 38px;
+    line-height: 1.15;
+    text-transform: uppercase;
+    background-position: center center;
+    border-color: transparent;
+    border-style: solid;
+}
