@@ -1,3 +1,5 @@
+import logging
+
 from django.shortcuts import render
 from django import forms
 from rest_framework import status
@@ -11,6 +13,7 @@ from .serializers import MachineSerializer, MaintenanceSerializer, ClaimSerializ
     PermissionSerializer
 
 
+logger = logging.getLogger(__name__)
 
 
 def homepage(request):
@@ -40,21 +43,24 @@ class PublicMachineInfoView(APIView):
     по заводскому номеру без необходимости авторизации
     """
     permission_classes = []  # Публичный доступ без авторизации
+    logger = logging.getLogger(__name__)
 
     def get(self, request):
         """
         Получение информации о машине по заводскому номеру
         """
         serial_number = request.query_params.get('serial_number', None)
+        logger.info(f"Запрос информации о машине с заводским номером: {serial_number}")
 
         if not serial_number:
-            return Response(
-                {"error": "Необходимо указать заводской номер машины"},
-                status=status.HTTP_400_BAD_REQUEST
-            )
+                return Response(
+                    {"error": "Необходимо указать заводской номер машины"},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
 
         try:
             machine = Machine.objects.get(serial_number=serial_number)
+            logger.info(f"Машина найдена: {machine}")
 
             # Ограничиваем выдаваемые данные только базовой информацией
             limited_data = {
@@ -93,11 +99,11 @@ class PublicMachineInfoView(APIView):
             return Response(limited_data)
 
         except Machine.DoesNotExist:
+            logger.warning(f"Машина с заводским номером {serial_number} не найдена")
             return Response(
-                {"error": "Данных о машине с таким заводским номером нет в системе"},
+                {"error": f"Машина с заводским номером {serial_number} не найдена"},
                 status=status.HTTP_404_NOT_FOUND
             )
-
 
 
 class CustomDjangoPermission(DjangoModelPermissions):

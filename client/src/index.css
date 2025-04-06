@@ -31,11 +31,65 @@
 
 :root {
   font-family: 'PT Astra Sans', Arial, sans-serif;
-  --blue: #163d6c;
+  --blue: #163e6c;
   --red: #d20a11;
   --background-color: #EBE6D6;
   --red-hover: #f3252d;
   --blue-hover: #1555a1;
   max-width: 100%;
   padding: 0;
+}
+
+main {
+  display: flex;
+  align-items: center;
+  flex-direction: column;
+  padding: 2rem;
+}
+
+input {
+  margin-left: 1rem;
+}
+
+h3 {
+  text-align: left;
+}
+
+h2 {
+  text-align: center;
+  color: var(--red);
+  margin: 1rem;
+}
+
+table {
+  width: 100%;
+  margin-bottom: 20px;
+  border: 15px solid #F2F8F8;
+  border-top: 5px solid #F2F8F8;
+  border-collapse: collapse;
+}
+
+table thead {
+  font-weight: bold;
+  collapse: var(--blue);
+}
+
+table th {
+  font-weight: bold;
+  padding: 5px;
+  background: #F2F8F8;
+  border: none;
+  border-bottom: 5px solid #F2F8F8;
+}
+
+table td {
+  padding: 5px;
+  border: none;
+  border-bottom: 5px solid #F2F8F8;
+}
+
+.error-message {
+  color: #d32f2f;
+  margin-top: 20px;
+  padding: 10px;
 }

@@ -22,12 +22,12 @@ function Header() {
                         </a>
                     </div>
                     <div className="right_buttons_but">
-                        <button className="login-button">Авторизация</button>
+                        <button className="login-button">Войти</button>
                     </div>
                 </div>
             </div>
             <div className="header-title">
-                Электронная сервисная книжка "Мой Силант"
+                Электронная сервисная{'\u00A0'}книжка "Мой{'\u00A0'}Силант"
             </div>
         </header>
     );
