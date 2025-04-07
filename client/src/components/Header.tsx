@@ -1,8 +1,33 @@
 import "../styles/Header.css";
 import headerIconUrl from "../assets/img/logo-header.svg";
-
+import {useState} from "react";
+import {useAuth} from "./AuthContext.tsx";
+import LoginModal from "./LoginModal";
 
 function Header() {
+    const { isLoggedIn, setIsLoggedIn, logout } = useAuth();
+    const [isModalOpen, setIsModalOpen] = useState(false);
+
+    // Обработчик для открытия модального окна
+    const handleLoginClick = () => {
+        setIsModalOpen(true);
+    };
+
+    // Обработчик для закрытия модального окна
+    const handleCloseModal = () => {
+        setIsModalOpen(false);
+    };
+
+    const handleLogin = () => {
+        setIsLoggedIn(true);
+        handleCloseModal();
+    };
+
+    const handleLogout = async () => {
+        await logout();
+        handleCloseModal();
+    };
+
     return (
         <header className="header">
             <div className="main-container">
@@ -22,13 +47,27 @@ function Header() {
                         </a>
                     </div>
                     <div className="right_buttons_but">
-                        <button className="login-button">Войти</button>
+                        { isLoggedIn ? (
+                        <>
+                            {/*<span className="username-display">{username}</span>*/}
+                            <button className="login-button" onClick={handleLogout}>Выйти</button>
+                        </>
+                        ) : (
+                            <button className="login-button" onClick={handleLoginClick}>Войти</button>
+                        )}
                     </div>
                 </div>
             </div>
             <div className="header-title">
                 Электронная сервисная{'\u00A0'}книжка "Мой{'\u00A0'}Силант"
             </div>
+
+            {/* Модальное окно авторизации */}
+            <LoginModal
+                isOpen={isModalOpen}
+                onClose={handleCloseModal}
+                onLogin={handleLogin}
+            />
         </header>
     );
 }

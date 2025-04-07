@@ -1,9 +1,10 @@
 import logging
 
+from django.contrib.auth import authenticate, login, logout
 from django.shortcuts import render
 from django import forms
 from rest_framework import status
-from rest_framework.permissions import IsAuthenticated, DjangoModelPermissions
+from rest_framework.permissions import AllowAny, IsAuthenticated, DjangoModelPermissions
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.viewsets import ReadOnlyModelViewSet
@@ -18,6 +19,36 @@ logger = logging.getLogger(__name__)
 
 def homepage(request):
     return render(request, 'index.html')
+
+
+class LoginView(APIView):
+    permission_classes = [AllowAny]
+
+    def post(self, request):
+        username = request.data.get('username')
+        password = request.data.get('password')
+        user = authenticate(request, username=username, password=password)
+        if user is not None:
+            login(request, user)
+            return Response({'message': 'Login successful'}, status=status.HTTP_200_OK)
+        return Response({'message': 'Invalid credentials'}, status=status.HTTP_401_UNAUTHORIZED)
+
+
+class CheckAuthView(APIView):
+    permission_classes = [AllowAny]
+
+    def get(self, request):
+        if request.user.is_authenticated:
+            return Response({'authenticated': True}, status=status.HTTP_200_OK)
+        return Response({'authenticated': False}, status=status.HTTP_401_UNAUTHORIZED)
+
+
+class LogoutView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        logout(request)
+        return Response({'message': 'Logout successful'}, status=status.HTTP_200_OK)
 
 
 class GroupViewSet(ReadOnlyModelViewSet):
