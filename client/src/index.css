@@ -64,8 +64,9 @@ h2 {
 table {
   width: 100%;
   margin-bottom: 20px;
-  border: 15px solid #F2F8F8;
-  border-top: 5px solid #F2F8F8;
+  min-width: max-content;
+  /*border: 15px solid #F2F8F8;*/
+  /*border-top: 5px solid #F2F8F8;*/
   border-collapse: collapse;
 }
 
@@ -77,15 +78,17 @@ table thead {
 table th {
   font-weight: bold;
   padding: 5px;
-  background: #F2F8F8;
+  background: var(--blue);
+  color: white;
   border: none;
-  border-bottom: 5px solid #F2F8F8;
+  border-bottom: 5px solid var(--blue);
 }
 
 table td {
   padding: 5px;
   border: none;
-  border-bottom: 5px solid #F2F8F8;
+  background: white;
+  border-bottom: 5px solid white;
 }
 
 .error-message {
