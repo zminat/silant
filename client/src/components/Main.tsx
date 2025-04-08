@@ -254,7 +254,9 @@ function Main() {
                 <div className="result-container">
                     <h2>Информация о комплектации и технических характеристиках Вашей техники</h2>
                     {userMachines.length > 0 ? (
-                        <AuthenticatedMachineTable machines={userMachines} />
+                            <div className="table-container">
+                                <AuthenticatedMachineTable machines={userMachines} />
+                            </div>
                     ) : (
                             <p>У вас пока нет машин в системе</p>
                             )}
@@ -298,7 +300,9 @@ function Main() {
                         <div className="result-container">
                             <h3>Результаты поиска: </h3>
                             <h2>Информация о комплектации и технических характеристиках Вашей техники</h2>
-                            <PublicMachineTable machine={machineData} />
+                            <div className="table-container">
+                                <PublicMachineTable machine={machineData} />
+                            </div>
                         </div>
                     )}
                 </>

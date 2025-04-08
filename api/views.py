@@ -8,10 +8,8 @@ from rest_framework.permissions import AllowAny, IsAuthenticated, DjangoModelPer
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.viewsets import ReadOnlyModelViewSet
-from django.contrib.auth.models import Group, Permission
 from .models import Machine, Maintenance, Claim, ServiceCompany
-from .serializers import MachineSerializer, MaintenanceSerializer, ClaimSerializer, GroupSerializer, \
-    PermissionSerializer
+from .serializers import MachineSerializer, MaintenanceSerializer, ClaimSerializer
 
 
 logger = logging.getLogger(__name__)
@@ -39,6 +37,7 @@ class CheckAuthView(APIView):
 
     def get(self, request):
         if request.user.is_authenticated:
+
             return Response({'authenticated': True}, status=status.HTTP_200_OK)
         return Response({'authenticated': False}, status=status.HTTP_401_UNAUTHORIZED)
 
@@ -49,23 +48,6 @@ class LogoutView(APIView):
     def get(self, request):
         logout(request)
         return Response({'message': 'Logout successful'}, status=status.HTTP_200_OK)
-
-
-class GroupViewSet(ReadOnlyModelViewSet):
-    queryset = Group.objects.all()
-    serializer_class = GroupSerializer
-
-
-class PermissionViewSet(ReadOnlyModelViewSet):
-    queryset = Permission.objects.all()
-    serializer_class = PermissionSerializer
-
-
-class UserPermissionsView(APIView):
-    def get(self, request, *args, **kwargs):
-        user = request.user
-        permissions = user.get_all_permissions()
-        return Response({'permissions': list(permissions)})
 
 
 class PublicMachineInfoView(APIView):
