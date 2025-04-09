@@ -3,15 +3,41 @@ import { useEffect, useState } from "react";
 import { useAuth } from "./AuthContext";
 import { PublicMachineTable } from './tables/PublicMachineTable';
 import { MachineInfoTabs } from './MachineInfoTabs';
-import { PublicMachineData, FullMachineData } from '../types/machine.types';
+import {PublicMachineData, FullMachineData, MaintenanceData, ClaimsData} from '../types/machine.types';
 
 const Main = () => {
     const { isLoggedIn } = useAuth();
     const [serialNumber, setSerialNumber] = useState<string>('');
     const [publicMachine, setPublicMachine] = useState<PublicMachineData | null>(null);
     const [userMachines, setUserMachines] = useState<FullMachineData[]>([]);
+    const [maintenanceData, setMaintenanceData] = useState<MaintenanceData[]>([]);
+    const [claimData, setClaimData] = useState<ClaimsData[]>([]);
     const [loading, setLoading] = useState<boolean>(false);
     const [error, setError] = useState<string>('');
+
+    const fetchMaintenanceData = async () => {
+        try {
+            const response = await fetch('/api/maintenances/');
+            if (response.ok) {
+                const data = await response.json();
+                setMaintenanceData(data);
+            }
+        } catch (err) {
+            console.error('Ошибка при получении данных о ТО:', err);
+        }
+    };
+
+    const fetchClaimsData = async () => {
+        try {
+            const response = await fetch('/api/claims/');
+            if (response.ok) {
+                const data = await response.json();
+                setClaimData(data);
+            }
+        } catch (err) {
+            console.error('Ошибка при получении данных о рекламациях:', err);
+        }
+    };
 
     const handleSearch = async () => {
         setLoading(true);
@@ -20,31 +46,29 @@ const Main = () => {
 
         try {
             if (isLoggedIn) {
-                const response = await fetch('/api/machines/', {
-                    headers: {
-                        'Authorization': `Bearer ${localStorage.getItem('token')}`
-                    }
-                });
+                const response = await fetch('/api/machines/');
                 if (!response.ok) {
-                    throw new Error('Ошибка при получении данных');
+                    setError('Ошибка при получении данных');
                 }
                 const data = await response.json();
                 setUserMachines(data);
+
+                // Загружаем данные о ТО и рекламациях после загрузки машин
+                await fetchMaintenanceData();
+                await fetchClaimsData();
             } else {
                 if (!serialNumber.trim()) {
-                    throw new Error('Введите заводской номер');
+                    setError('Введите заводской номер');
                 }
 
-                // Исправлен URL-запрос - удалён слэш в конце и пробел
                 const response = await fetch(`/api/public-machine-info/?serial_number=${serialNumber}`);
 
                 if (!response.ok) {
-                    throw new Error('Машина не найдена');
+                    setError('Машина не найдена');
                 }
 
                 const data = await response.json();
 
-                // Важно - создаём объект в правильном формате согласно интерфейсу PublicMachineData
                 setPublicMachine({
                     serial_number: data.serial_number,
                     model: {
@@ -92,10 +116,10 @@ const Main = () => {
                         <div className="error-message">{error}</div>
                     ) : userMachines.length > 0 ? (
                         <div className="table-container">
-                            <MachineInfoTabs machines={userMachines} />
+                            <MachineInfoTabs machines={userMachines} maintenance={maintenanceData} claim={claimData}/>
                         </div>
                     ) : (
-                        <p>У вас пока нет машин в системе</p>
+                        <p>У вас пока нет машин</p>
                     )}
                 </div>
             ) : (

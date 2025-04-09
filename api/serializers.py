@@ -71,20 +71,29 @@ class UserSerializer(serializers.ModelSerializer):
 # Сериализатор для технического обслуживания
 class MaintenanceSerializer(serializers.ModelSerializer):
     maintenance_type = MaintenanceTypeSerializer(read_only=True)
+    machine = serializers.SerializerMethodField()
     organization = serializers.ChoiceField(read_only=True, choices=[(Maintenance.SELF_SERVICE, "Самостоятельно")] + [
         (sc.name, sc.name) for sc in ServiceCompany.objects.all()
     ])
+
+    def get_machine(self, obj):
+        return {"serial_number": obj.machine.serial_number} if obj.machine else None
 
     class Meta:
         model = Maintenance
         fields = '__all__'
 
+
 # Сериализатор для рекламаций
 class ClaimSerializer(serializers.ModelSerializer):
+    machine = serializers.SerializerMethodField()
     failure_node = FailureNodeSerializer(read_only=True)
     recovery_method = RecoveryMethodSerializer(read_only=True)
     service_company = ServiceCompanySerializer(read_only=True)
     downtime = serializers.IntegerField(read_only=True)  # Автоматически рассчитывается
+
+    def get_machine(self, obj):
+        return {"serial_number": obj.machine.serial_number} if obj.machine else None
 
     class Meta:
         model = Claim

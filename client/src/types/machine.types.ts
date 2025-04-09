@@ -37,3 +37,43 @@ export interface FullMachineData extends PublicMachineData {
         name: string;
     };
 }
+
+
+export interface MaintenanceData {
+    id: number;
+    machine: {
+        serial_number: string;
+    };
+    maintenance_type: {
+        name: string;
+    };
+    maintenance_date: string;
+    operating_time: number;
+    order_number: string;
+    order_date: string;
+    organization: string;
+    service_company?: {
+        id: number;
+        name: string;
+    };
+}
+
+
+export interface ClaimsData {
+    id: number;
+    machine: {
+        serial_number: string;
+    };
+    failure_date: string;
+    operating_time: number;
+    failure_node: {
+        name: string;
+    };
+    failure_description: string;
+    recovery_method: {
+        name: string;
+    };
+    spare_parts_used: string;
+    recovery_date: string;
+    downtime: number;
+}

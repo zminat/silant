@@ -173,7 +173,7 @@ class Claim(models.Model):
         return (self.recovery_date - self.failure_date).days
 
     def __str__(self):
-        return f"Рекламация {self.machine.serial_number} ({self.failure_date})"
+        return f"Рекламация {self.machine.serial_number})"
 
     class Meta:
         verbose_name = "Рекламация"

@@ -1,16 +1,74 @@
-import { FC, useState } from 'react';
+import { FC, useState, useEffect } from 'react';
 import { AuthenticatedMachineTable } from './tables/AuthenticatedMachineTable';
-import { FullMachineData } from '../types/machine.types';
+import {ClaimsData, FullMachineData, MaintenanceData} from '../types/machine.types';
 import '../styles/MachineInfoTabs.css';
+import { MaintenanceTable } from "./tables/MaintenanceTable.tsx";
+import { useAuth } from './AuthContext.tsx';
+import {ClaimsTable} from "./tables/ClaimsTable.tsx";
 
-type TabType = 'general' | 'maintenance' | 'complaints';
+type TabType = 'machines' | 'maintenance' | 'claims';
 
 interface MachineInfoTabsProps {
     machines: FullMachineData[];
+    maintenance: MaintenanceData[];
+    claim: ClaimsData[];
 }
 
-export const MachineInfoTabs: FC<MachineInfoTabsProps> = ({ machines }) => {
-    const [activeTab, setActiveTab] = useState<TabType>('general');
+export const MachineInfoTabs: FC<MachineInfoTabsProps> = ({ machines, maintenance, claim }) => {
+    const [activeTab, setActiveTab] = useState<TabType>('machines');
+    const { isLoggedIn } = useAuth();
+    const [filteredMaintenance, setFilteredMaintenance] = useState<MaintenanceData[]>(maintenance);
+    const [filteredClaims, setFilteredClaims] = useState<ClaimsData[]>(claim);
+
+    useEffect(() => {
+        if (isLoggedIn && activeTab === 'maintenance') {
+            const fetchFilteredMaintenance = async () => {
+                try {
+                    const response = await fetch('/api/user/maintenances');
+                    if (response.ok) {
+                        const data = await response.json();
+                        setFilteredMaintenance(data);
+                    } else {
+                        // Если запрос не удался, используем данные, переданные через props
+                        setFilteredMaintenance(maintenance);
+                    }
+                } catch (error) {
+                    console.error('Ошибка при получении данных ТО:', error);
+                    setFilteredMaintenance(maintenance);
+                }
+            };
+
+            fetchFilteredMaintenance();
+        } else {
+            // Если пользователь не авторизован или не на вкладке ТО, используем данные из props
+            setFilteredMaintenance(maintenance);
+        }
+    }, [isLoggedIn, activeTab, maintenance]);
+
+    useEffect(() => {
+        if (isLoggedIn && activeTab === 'claims') {
+            const fetchFilteredClaims = async () => {
+                try {
+                    const response = await fetch('/api/user/claims');
+                    if (response.ok) {
+                        const data = await response.json();
+                        setFilteredClaims(data);
+                    } else {
+                        // Если запрос не удался, используем данные, переданные через props
+                        setFilteredClaims(claim);
+                    }
+                } catch (error) {
+                    console.error('Ошибка при получении данных о рекламациях:', error);
+                    setFilteredClaims(claim);
+                }
+            };
+
+            fetchFilteredClaims();
+        } else {
+            // Если пользователь не авторизован или не на вкладке Рекламации, используем данные из props
+            setFilteredClaims(claim);
+        }
+    }, [isLoggedIn, activeTab, claim]);
 
     const getTabClassName = (tabName: TabType) => {
         return `tab ${activeTab === tabName ? 'active' : ''}`;
@@ -20,8 +78,8 @@ export const MachineInfoTabs: FC<MachineInfoTabsProps> = ({ machines }) => {
         <div className="machine-info">
             <div className="nav-tabs">
                 <div
-                    className={getTabClassName('general')}
-                    onClick={() => setActiveTab('general')}
+                    className={getTabClassName('machines')}
+                    onClick={() => setActiveTab('machines')}
                 >
                     Общая информация
                 </div>
@@ -32,16 +90,16 @@ export const MachineInfoTabs: FC<MachineInfoTabsProps> = ({ machines }) => {
                     ТО
                 </div>
                 <div
-                    className={getTabClassName('complaints')}
-                    onClick={() => setActiveTab('complaints')}
+                    className={getTabClassName('claims')}
+                    onClick={() => setActiveTab('claims')}
                 >
                     Рекламации
                 </div>
             </div>
             <div className="table-container">
-                {activeTab === 'general' && <AuthenticatedMachineTable machines={machines} />}
-                {activeTab === 'maintenance' && <div>Таблица ТО (в разработке)</div>}
-                {activeTab === 'complaints' && <div>Таблица рекламаций (в разработке)</div>}
+                {activeTab === 'machines' && <AuthenticatedMachineTable machines={machines} />}
+                {activeTab === 'maintenance' && <div><MaintenanceTable maintenance={filteredMaintenance} /></div>}
+                {activeTab === 'claims' && <div><ClaimsTable claim={filteredClaims} /></div>}
             </div>
         </div>
     );
