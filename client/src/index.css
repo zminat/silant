@@ -98,3 +98,13 @@ table td {
   margin-top: 20px;
   padding: 10px;
 }
+
+.clickable {
+  cursor: pointer;
+  transition: color 0.2s ease;
+  color: var(--blue);
+}
+
+.clickable:hover {
+  color: var(--blue-hover);
+}

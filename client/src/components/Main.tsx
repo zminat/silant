@@ -72,22 +72,27 @@ const Main = () => {
                 setPublicMachine({
                     serial_number: data.serial_number,
                     model: {
-                        name: data.model.name
+                        name: data.model.name,
+                        description: data.model.description
                     },
                     engine_model: {
-                        name: data.engine_model.name
+                        name: data.engine_model.name,
+                        description: data.engine_model.description
                     },
                     engine_serial_number: data.engine_serial_number,
                     transmission_model: {
-                        name: data.transmission_model.name
+                        name: data.transmission_model.name,
+                        description: data.transmission_model.description
                     },
                     transmission_serial_number: data.transmission_serial_number,
                     drive_axle_model: {
-                        name: data.drive_axle_model.name
+                        name: data.drive_axle_model.name,
+                        description: data.drive_axle_model.description
                     },
                     drive_axle_serial_number: data.drive_axle_serial_number,
                     steering_axle_model: {
-                        name: data.steering_axle_model.name
+                        name: data.steering_axle_model.name,
+                        description: data.steering_axle_model.description
                     },
                     steering_axle_serial_number: data.steering_axle_serial_number
                 });
