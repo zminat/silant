@@ -1,7 +1,12 @@
-import { FC, useState } from 'react';
+import { FC, useState, useMemo } from 'react';
+import { AgGridReact } from 'ag-grid-react';
+import { AllCommunityModule, ModuleRegistry, ColDef, ICellRendererParams, CellClickedEvent, themeMaterial } from 'ag-grid-community';
+import AG_GRID_LOCALE_RU from '../../locale/AG_GRID_LOCALE_RU.ts';
 import { MaintenanceData } from '../../types/machine.types';
-import { InfoModal } from '../InfoModal';
 import '../../styles/Main.css';
+import { InfoModal } from '../InfoModal';
+
+ModuleRegistry.registerModules([AllCommunityModule]);
 
 interface MaintenanceTableProps {
     maintenance: MaintenanceData[];
@@ -23,52 +28,96 @@ export const MaintenanceTable: FC<MaintenanceTableProps> = ({ maintenance }) => 
             });
         }
     };
+
+    const defaultColDef = useMemo(() => ({
+        sortable: true,
+        filter: true,
+        filterParams: {
+            buttons: ['reset', 'apply'],
+            closeOnApply: true
+        },
+        wrapText: true,
+        autoHeight: true,
+    }), []);
+
+    // Преобразуем данные ТО в формат для AgGrid
+    const rowData = useMemo(() => {
+        return maintenance.map((item, index) => ({
+            index: index + 1,
+            serialNumber: item.machine?.serial_number || '',
+            machineWithDescription: !!item.machine?.description,
+            maintenanceType: item.maintenance_type?.name || '',
+            maintenanceTypeWithDescription: !!item.maintenance_type?.description,
+            maintenanceDate: item.maintenance_date,
+            operatingTime: item.operating_time,
+            orderNumber: item.order_number,
+            orderDate: item.order_date,
+            organization: item.organization,
+            // Сохраним оригинальные объекты для обработчиков нажатий
+            machineObj: item.machine,
+            maintenanceTypeObj: item.maintenance_type
+        }));
+    }, [maintenance]);
+
+    // Определение столбцов для AgGrid
+    const columnDefs = useMemo<ColDef<(typeof rowData)[0]>[]>(() => [
+        { headerName: '№ п/п', field: 'index', width: 80 },
+        {
+            headerName: 'Зав. № машины',
+            field: 'serialNumber',
+            cellRenderer: (params: ICellRendererParams<(typeof rowData)[0]>) => {
+                const hasDescription = params.data?.machineWithDescription;
+                return hasDescription ?
+                    <span className="clickable">{params.value}</span> :
+                    params.value;
+            },
+            cellStyle: { cursor: 'pointer' },
+            onCellClicked: (params: CellClickedEvent<(typeof rowData)[0]>) => {
+                if (params.data?.machineWithDescription) {
+                    handleTypeClick(params.data.machineObj);
+                }
+            }
+        },
+        {
+            headerName: 'Вид ТО',
+            field: 'maintenanceType',
+            cellRenderer: (params: ICellRendererParams<(typeof rowData)[0]>) => {
+                const hasDescription = params.data?.maintenanceTypeWithDescription;
+                return hasDescription ?
+                    <span className="clickable">{params.value}</span> :
+                    params.value;
+            },
+            cellStyle: { cursor: 'pointer' },
+            onCellClicked: (params: CellClickedEvent<(typeof rowData)[0]>) => {
+                if (params.data?.maintenanceTypeWithDescription) {
+                    handleTypeClick(params.data.maintenanceTypeObj);
+                }
+            }
+        },
+        { headerName: 'Дата проведения ТО', field: 'maintenanceDate' },
+        { headerName: 'Наработка, м/час', field: 'operatingTime' },
+        { headerName: '№ заказ-наряда', field: 'orderNumber' },
+        { headerName: 'дата заказ-наряда', field: 'orderDate' },
+        { headerName: 'Организация, проводившая ТО', field: 'organization' }
+    ], []);
+
     return (
         <>
-            <div className="table-container">
-                <table>
-                    <thead>
-                    <tr>
-                        <th>№ п/п</th>
-                        <th>Зав. № машины</th>
-                        <th>Вид ТО</th>
-                        <th>Дата проведения ТО</th>
-                        <th>Наработка, м/час</th>
-                        <th>№ заказ-наряда</th>
-                        <th>дата заказ-наряда</th>
-                        <th>Организация, проводившая ТО</th>
-                    </tr>
-                    </thead>
-                    <tbody>
-                    {maintenance.map((maintenance, index) => (
-                        <tr key={maintenance.id}>
-                            <td>{index + 1}</td>
-                            <td
-                                onClick={() => maintenance.machine?.serial_number &&
-                                    handleTypeClick(maintenance.machine)}
-                                className={maintenance.machine?.description ? 'clickable' : ''}
-                            >{maintenance.machine?.serial_number}</td>
-                            <td
-                                onClick={() => maintenance.maintenance_type &&
-                                    handleTypeClick(maintenance.maintenance_type)}
-                                className={maintenance.maintenance_type?.description ? 'clickable' : ''}
-                            >{maintenance.maintenance_type?.name}</td>
-                            <td>{maintenance.maintenance_date}</td>
-                            <td>{maintenance.operating_time}</td>
-                            <td>{maintenance.order_number}</td>
-                            <td>{maintenance.order_date}</td>
-                            <td>{maintenance.organization}</td>
-                        </tr>
-                    ))}
-                    </tbody>
-                </table>
-            </div>
-
+            <AgGridReact
+                rowData={rowData}
+                columnDefs={columnDefs}
+                defaultColDef={defaultColDef}
+                theme={themeMaterial}
+                localeText={AG_GRID_LOCALE_RU}
+                domLayout='autoHeight'
+                rowHeight={40}
+                headerHeight={40}
+            />
             <InfoModal
                 isOpen={modalInfo.isOpen}
-                onClose={() => setModalInfo(prev => ({ ...prev, isOpen: false }))}
                 title={modalInfo.title}
                 description={modalInfo.description}
+                onClose={() => setModalInfo({ ...modalInfo, isOpen: false })}
             />
         </>
     );

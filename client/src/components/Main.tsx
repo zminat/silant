@@ -77,6 +77,13 @@ const Main = () => {
         }
     };
 
+    const handleKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
+        if (event.key === 'Enter') {
+            handleSearch();
+        }
+    };
+
+
     useEffect(() => {
         if (isLoggedIn) {
             handleSearch();
@@ -113,6 +120,7 @@ const Main = () => {
                                 name="serialNumber"
                                 value={serialNumber}
                                 onChange={(e) => setSerialNumber(e.target.value)}
+                                onKeyDown={handleKeyDown}
                                 placeholder="0000"
                             />
                         </label>

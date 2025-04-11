@@ -1,8 +1,7 @@
 footer {
     background-color: var(--blue);
     color: white;
-    position: relative;
-    bottom: 0;
+    flex-shrink: 0;
     width: 100%;
 }
 

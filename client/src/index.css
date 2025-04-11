@@ -37,7 +37,6 @@
   box-sizing: border-box;
 }
 
-
 :root {
   font-family: 'PT Astra Sans', Arial, sans-serif;
   --blue: #163e6c;
@@ -47,6 +46,13 @@
   --blue-hover: #1555a1;
   max-width: 100%;
   padding: 0;
+}
+
+body, #root {
+  min-height: 100vh;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
 }
 
 main {
@@ -59,6 +65,7 @@ main {
   position: relative;
   width: 100%;
   box-sizing: border-box;
+  flex: 1 0 auto;
 }
 
 input {
@@ -89,7 +96,9 @@ table thead {
   collapse: var(--blue);
 }
 
-table th {
+table th, .ag-header-cell {
+  font-family: 'PT Astra Sans', Arial, sans-serif;
+  font-size: 16px;
   font-weight: bold;
   padding: 5px;
   background: var(--blue);
@@ -98,11 +107,22 @@ table th {
   border-bottom: 5px solid var(--blue);
 }
 
-table td {
+table td, .ag-cell {
+  font-family: 'PT Astra Sans', Arial, sans-serif;
+  font-size: 16px;
   padding: 5px;
   border: none;
   background: white;
   border-bottom: 5px solid white;
+}
+
+.ag-header-cell-text {
+  text-align: center;
+  width: 100%;
+}
+
+.ag-header-cell-label {
+  justify-content: center;
 }
 
 .error-message {
@@ -123,28 +143,28 @@ table td {
 
 /* Для десктопов (1920x1080, 1440x900) */
 @media (min-width: 1367px) {
-  :root {
+  :root, .ag-header-cell, .ag-cell {
     font-size: 16px;
   }
 }
 
 /* Для средних десктопов (1366x768) */
 @media (max-width: 1366px) {
-  :root {
+  :root, .ag-header-cell, .ag-cell {
     font-size: 15px;
   }
 }
 
 /* Для планшетов */
 @media (max-width: 960px) {
-  :root {
+  :root, .ag-header-cell, .ag-cell {
     font-size: 14px;
   }
 }
 
 /* Для мобильных устройств (360x640) */
 @media (max-width: 480px) {
-  :root {
+  :root, .ag-header-cell, .ag-cell {
     font-size: 13px;
   }
 
@@ -152,7 +172,7 @@ table td {
     padding: 0;
   }
 
-  table th, table td {
+  table th, table td, .ag-header-cell, .ag-cell {
     padding: 3px;
     font-size: 0.85rem;
   }
