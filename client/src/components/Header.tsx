@@ -1,12 +1,24 @@
 import "../styles/Header.css";
 import headerIconUrl from "../assets/img/logo-header.svg";
-import {useState} from "react";
+import logoIcon from "../assets/img/logo-icon.svg"
+import {useState, useEffect} from "react";
 import {useAuth} from "./AuthContext.tsx";
 import LoginModal from "./LoginModal";
 
 function Header() {
     const { isLoggedIn, setIsLoggedIn, logout } = useAuth();
     const [isModalOpen, setIsModalOpen] = useState(false);
+    const [isMobile, setIsMobile] = useState(window.innerWidth <= 480);
+
+    useEffect(() => {
+        const handleResize = () => {
+            setIsMobile(window.innerWidth <= 480);
+        };
+
+        window.addEventListener('resize', handleResize);
+        return () => window.removeEventListener('resize', handleResize);
+    }, []);
+
 
     // Обработчик для открытия модального окна
     const handleLoginClick = () => {
@@ -32,7 +44,11 @@ function Header() {
         <header className="header">
             <div className="main-container">
                 <div className="left-side">
-                    <img src={headerIconUrl} alt=""/>
+                    {!isMobile ? (
+                        <img src={headerIconUrl} alt=""/>
+                    ):(
+                        <img src={logoIcon} alt=""/>
+                        )}
                 </div>
                 <div className="right-side">
                     <div className="right_buttons_but">

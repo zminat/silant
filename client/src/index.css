@@ -1,33 +1,42 @@
 @font-face {
   font-family: 'PT Astra Sans';
-  src: url(./assets/fonts/PT-Astra-Sans_Regular.ttf) format('ttf');
+  src: url(./assets/fonts/PT-Astra-Sans_Regular.ttf) format('truetype');
   font-weight: normal;
   font-style: normal;
+  font-display: swap;
 }
 
 @font-face {
   font-family: 'PT Astra Sans';
-  src: url(./assets/fonts/PT-Astra-Sans_Bold-Italic.ttf) format('ttf');
+  src: url(./assets/fonts/PT-Astra-Sans_Bold-Italic.ttf) format('truetype');
   font-weight: bold;
   font-style: italic;
+  font-display: swap;
 }
 
 @font-face {
   font-family: 'PT Astra Sans';
-  src: url(./assets/fonts/PT-Astra-Sans_Bold.ttf) format('ttf');
+  src: url(./assets/fonts/PT-Astra-Sans_Bold.ttf) format('truetype');
   font-weight: bold;
+  font-display: swap;
 }
 
 @font-face {
   font-family: 'PT Astra Sans';
-  src: url(./assets/fonts/PT-Astra-Sans_Italic.ttf) format('ttf');
+  src: url(./assets/fonts/PT-Astra-Sans_Italic.ttf) format('truetype');
   font-style: italic;
+  font-display: swap;
 }
 
 * {
   margin: 0;
   padding: 0;
 }
+
+*, *:before, *:after {
+  box-sizing: border-box;
+}
+
 
 :root {
   font-family: 'PT Astra Sans', Arial, sans-serif;
@@ -41,12 +50,15 @@
 }
 
 main {
+  display: -webkit-flex;
   display: flex;
   align-items: center;
   flex-direction: column;
   padding: 2rem;
   min-height: 64vh;
   position: relative;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 input {
@@ -66,7 +78,7 @@ h2 {
 table {
   width: 100%;
   margin-bottom: 20px;
-  min-width: max-content;
+  /*min-width: max-content;*/
   /*border: 15px solid #F2F8F8;*/
   /*border-top: 5px solid #F2F8F8;*/
   border-collapse: collapse;
@@ -107,4 +119,41 @@ table td {
 
 .clickable:hover {
   color: var(--blue-hover);
+}
+
+/* Для десктопов (1920x1080, 1440x900) */
+@media (min-width: 1367px) {
+  :root {
+    font-size: 16px;
+  }
+}
+
+/* Для средних десктопов (1366x768) */
+@media (max-width: 1366px) {
+  :root {
+    font-size: 15px;
+  }
+}
+
+/* Для планшетов */
+@media (max-width: 960px) {
+  :root {
+    font-size: 14px;
+  }
+}
+
+/* Для мобильных устройств (360x640) */
+@media (max-width: 480px) {
+  :root {
+    font-size: 13px;
+  }
+
+  main {
+    padding: 0;
+  }
+
+  table th, table td {
+    padding: 3px;
+    font-size: 0.85rem;
+  }
 }
