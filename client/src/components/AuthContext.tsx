@@ -4,7 +4,6 @@ interface AuthContextType {
     isLoggedIn: boolean;
     setIsLoggedIn: (value: boolean) => void;
     checkAuthStatus: () => Promise<boolean>;
-    getCookie: (name:string) => string;
     logout: () => Promise<void>;
 }
 
@@ -28,22 +27,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             return false;
         }
     };
-
-    const getCookie = (name:string):string => {
-        let cookieValue = '';
-        if (document.cookie && document.cookie !== '') {
-            const cookies = document.cookie.split(';');
-            for (let i = 0; i < cookies.length; i++) {
-                const cookie = cookies[i].trim();
-                if (cookie.startsWith(`${name}=`)) {
-                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-                    break;
-                }
-            }
-        }
-
-        return cookieValue;
-    }
 
     const logout = async () => {
         try {
@@ -70,7 +53,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             isLoggedIn,
             setIsLoggedIn,
             checkAuthStatus,
-            getCookie,
             logout
         }}>
             {children}

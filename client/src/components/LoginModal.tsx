@@ -12,21 +12,16 @@ function LoginModal({ isOpen, onClose, onLogin }: LoginModalProps) {
     const [username, setUsername] = useState("");
     const [password, setPassword] = useState("");
     const [loginError, setLoginError] = useState("");
-    const { setIsLoggedIn, getCookie } = useAuth();
+    const { setIsLoggedIn } = useAuth();
 
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         setLoginError("");
         const formData = new FormData(e.currentTarget);
-        const csrfToken = getCookie('csrftoken');
 
         try {
             const response = await fetch('/api/login/', {
                 method: 'POST',
-                headers: {
-                    ...(csrfToken ? { 'X-CSRFToken': csrfToken } : {}),
-                    'Accept': 'application/json',
-                },
                 body: formData
             });
 
