@@ -3,7 +3,7 @@ from rest_framework.routers import DefaultRouter
 from tutorial.quickstart.views import UserViewSet
 
 from api.views import (
-    LoginView, CheckAuthView, LogoutView, MachineViewSet, MaintenanceViewSet, ClaimViewSet, PublicMachineInfoView
+    MachineViewSet, MaintenanceViewSet, ClaimViewSet, PublicMachineInfoView
 )
 
 router = DefaultRouter()
@@ -13,11 +13,9 @@ router.register(r'claims', ClaimViewSet, basename='claim')
 
 urlpatterns = [
     path('', include(router.urls)),
-    path('login/', LoginView.as_view(), name='login'),
-    path('check-auth/', CheckAuthView.as_view(), name='check-auth'),
-    path('logout/', LogoutView.as_view(), name='logout'),
+    path('auth/', include('dj_rest_auth.urls')),
+    path('auth/registration/', include('dj_rest_auth.registration.urls')),
     path('public-machine-info/', PublicMachineInfoView.as_view(), name='public-machine-info'),
-    path('auth/', include('rest_framework.urls')),
     path('user/', UserViewSet.as_view({'get': 'list'}), name='user-list'),
     path('user/machines', MachineViewSet.as_view({'get': 'list'}), name='user-machines'),
     path('user/maintenances', MaintenanceViewSet.as_view({'get': 'list'}), name='user-maintenances'),

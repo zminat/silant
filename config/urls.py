@@ -20,6 +20,7 @@ from api.views import homepage
 
 urlpatterns = [
     path('admin/', admin.site.urls),
+    path('accounts/', include('allauth.urls')),
     path('', homepage, name='home'),
     path('api/', include('api.urls')),
 ]
