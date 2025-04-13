@@ -192,13 +192,9 @@ class MaintenanceViewSet(ReadOnlyModelViewSet):
         # Для клиентов показываем ТО только их машин
         return Maintenance.objects.filter(machine__client=user)
 
-    def get_permissions(self):
-        return [IsAuthenticated()]
-
 
 class ClaimViewSet(ReadOnlyModelViewSet):
     serializer_class = ClaimSerializer
-    permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
         user = self.request.user
