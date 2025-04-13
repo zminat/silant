@@ -22,5 +22,13 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('accounts/', include('allauth.urls')),
     path('', homepage, name='home'),
+    path('machine-models/<int:id>/', homepage, name='home'),
+    path('engine-models/<int:id>/', homepage, name='home'),
+    path('transmission-models/<int:id>/', homepage, name='home'),
+    path('drive-axle-models/<int:id>/', homepage, name='home'),
+    path('steering-axle-models/<int:id>/', homepage, name='home'),
+    path('maintenance-types/<int:id>/', homepage, name='home'),
+    path('failure-nodes/<int:id>/', homepage, name='home'),
+    path('recovery-methods/<int:id>/', homepage, name='home'),
     path('api/', include('api.urls')),
 ]

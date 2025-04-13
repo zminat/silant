@@ -1,5 +1,3 @@
-import logging
-
 from django.shortcuts import render
 from django import forms
 from rest_framework import status
@@ -7,15 +5,59 @@ from rest_framework.permissions import IsAuthenticated, DjangoModelPermissions
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.viewsets import ReadOnlyModelViewSet
-from .models import Machine, Maintenance, Claim, ServiceCompany
-from .serializers import MachineSerializer, MaintenanceSerializer, ClaimSerializer
+from .models import Machine, Maintenance, Claim, ServiceCompany, MachineModel, EngineModel, TransmissionModel, \
+    DriveAxleModel, SteeringAxleModel, MaintenanceType, FailureNode, RecoveryMethod
+from .serializers import MachineSerializer, MaintenanceSerializer, ClaimSerializer, MachineModelSerializer, \
+    EngineModelSerializer, TransmissionModelSerializer, DriveAxleModelSerializer, SteeringAxleModelSerializer, \
+    MaintenanceTypeSerializer, FailureNodeSerializer, RecoveryMethodSerializer
 
 
-logger = logging.getLogger(__name__)
-
-
-def homepage(request):
+def homepage(request, id=None):
     return render(request, 'index.html')
+
+
+class BaseReferenceViewSet(ReadOnlyModelViewSet):
+    permission_classes = []
+
+
+class MachineModelViewSet(BaseReferenceViewSet):
+    queryset = MachineModel.objects.all()
+    serializer_class = MachineModelSerializer
+
+
+class EngineModelViewSet(BaseReferenceViewSet):
+    queryset = EngineModel.objects.all()
+    serializer_class = EngineModelSerializer
+
+
+class TransmissionModelViewSet(BaseReferenceViewSet):
+    queryset = TransmissionModel.objects.all()
+    serializer_class = TransmissionModelSerializer
+
+
+class DriveAxleModelViewSet(BaseReferenceViewSet):
+    queryset = DriveAxleModel.objects.all()
+    serializer_class = DriveAxleModelSerializer
+
+
+class SteeringAxleModelViewSet(BaseReferenceViewSet):
+    queryset = SteeringAxleModel.objects.all()
+    serializer_class = SteeringAxleModelSerializer
+
+
+class MaintenanceTypeViewSet(BaseReferenceViewSet):
+    queryset = MaintenanceType.objects.all()
+    serializer_class = MaintenanceTypeSerializer
+
+
+class FailureNodeViewSet(BaseReferenceViewSet):
+    queryset = FailureNode.objects.all()
+    serializer_class = FailureNodeSerializer
+
+
+class RecoveryMethodViewSet(BaseReferenceViewSet):
+    queryset = RecoveryMethod.objects.all()
+    serializer_class = RecoveryMethodSerializer
 
 
 class PublicMachineInfoView(APIView):
@@ -24,24 +66,21 @@ class PublicMachineInfoView(APIView):
     по заводскому номеру без необходимости авторизации
     """
     permission_classes = []  # Публичный доступ без авторизации
-    logger = logging.getLogger(__name__)
 
     def get(self, request):
         """
         Получение информации о машине по заводскому номеру
         """
         serial_number = request.query_params.get('serial_number', None)
-        logger.info(f"Запрос информации о машине с заводским номером: {serial_number}")
 
         if not serial_number:
-                return Response(
-                    {"error": "Необходимо указать заводской номер машины"},
-                    status=status.HTTP_400_BAD_REQUEST
-                )
+            return Response(
+                {"error": "Необходимо указать заводской номер машины"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
 
         try:
             machine = Machine.objects.get(serial_number=serial_number)
-            logger.info(f"Машина найдена: {machine}")
 
             # Ограничиваем выдаваемые данные только базовой информацией
             limited_data = {
@@ -80,7 +119,6 @@ class PublicMachineInfoView(APIView):
             return Response(limited_data)
 
         except Machine.DoesNotExist:
-            logger.warning(f"Машина с заводским номером {serial_number} не найдена")
             return Response(
                 {"error": f"Машина с заводским номером {serial_number} не найдена"},
                 status=status.HTTP_404_NOT_FOUND
@@ -123,7 +161,6 @@ class MachineViewSet(ReadOnlyModelViewSet):
 
         # Обычным клиентам показываем только их машины
         return Machine.objects.filter(client=user)
-
 
     def get_permissions(self):
         """
@@ -187,9 +224,11 @@ class ClaimViewSet(ReadOnlyModelViewSet):
         """
         return [IsAuthenticated(), CustomDjangoPermission()]
 
+
 class MaintenanceForm(forms.ModelForm):
     organization = forms.ChoiceField(
-        choices=[(Maintenance.SELF_SERVICE, "Самостоятельно")] + [(sc.name, sc.name) for sc in ServiceCompany.objects.all()],
+        choices=[(Maintenance.SELF_SERVICE, "Самостоятельно")] + [(sc.name, sc.name) for sc in
+                                                                  ServiceCompany.objects.all()],
         required=True
     )
 

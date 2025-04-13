@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from django.contrib.auth.models import User, Group, Permission
+from django.contrib.auth.models import User
 from .models import (
     Machine, Maintenance, Claim, MachineModel, EngineModel, TransmissionModel,
     DriveAxleModel, SteeringAxleModel, MaintenanceType, FailureNode,
@@ -7,68 +7,63 @@ from .models import (
 )
 
 
-class PermissionSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Permission
-        fields = ['id', 'name', 'codename', 'content_type']
-
-
-class GroupSerializer(serializers.ModelSerializer):
-    permissions = PermissionSerializer(many=True, read_only=True)
-
-    class Meta:
-        model = Group
-        fields = ['id', 'name']
-
-
-# Базовый сериализатор для справочников
 class BaseReferenceSerializer(serializers.ModelSerializer):
     class Meta:
         fields = ('id', 'name', 'description')
+
 
 class MachineModelSerializer(BaseReferenceSerializer):
     class Meta(BaseReferenceSerializer.Meta):
         model = MachineModel
 
+
 class EngineModelSerializer(BaseReferenceSerializer):
     class Meta(BaseReferenceSerializer.Meta):
         model = EngineModel
+
 
 class TransmissionModelSerializer(BaseReferenceSerializer):
     class Meta(BaseReferenceSerializer.Meta):
         model = TransmissionModel
 
+
 class DriveAxleModelSerializer(BaseReferenceSerializer):
     class Meta(BaseReferenceSerializer.Meta):
         model = DriveAxleModel
+
 
 class SteeringAxleModelSerializer(BaseReferenceSerializer):
     class Meta(BaseReferenceSerializer.Meta):
         model = SteeringAxleModel
 
+
 class MaintenanceTypeSerializer(BaseReferenceSerializer):
     class Meta(BaseReferenceSerializer.Meta):
         model = MaintenanceType
+
 
 class FailureNodeSerializer(BaseReferenceSerializer):
     class Meta(BaseReferenceSerializer.Meta):
         model = FailureNode
 
+
 class RecoveryMethodSerializer(BaseReferenceSerializer):
     class Meta(BaseReferenceSerializer.Meta):
         model = RecoveryMethod
+
 
 class ServiceCompanySerializer(serializers.ModelSerializer):
     class Meta:
         model = ServiceCompany
         fields = ['id', 'name', 'description']
 
+
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ('id', 'username', 'first_name')#, 'role')
+        fields = ('id', 'username', 'first_name')  # , 'role')
 
-# Сериализатор для технического обслуживания
+
 class MaintenanceSerializer(serializers.ModelSerializer):
     maintenance_type = MaintenanceTypeSerializer(read_only=True)
     machine = serializers.SerializerMethodField()
@@ -84,7 +79,6 @@ class MaintenanceSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
-# Сериализатор для рекламаций
 class ClaimSerializer(serializers.ModelSerializer):
     machine = serializers.SerializerMethodField()
     failure_node = FailureNodeSerializer(read_only=True)
@@ -99,7 +93,7 @@ class ClaimSerializer(serializers.ModelSerializer):
         model = Claim
         fields = '__all__'
 
-# Сериализатор для машины
+
 class MachineSerializer(serializers.ModelSerializer):
     model = MachineModelSerializer(read_only=True)
     engine_model = EngineModelSerializer(read_only=True)
