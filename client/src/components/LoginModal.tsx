@@ -12,31 +12,22 @@ function LoginModal({ isOpen, onClose, onLogin }: LoginModalProps) {
     const [username, setUsername] = useState("");
     const [password, setPassword] = useState("");
     const [loginError, setLoginError] = useState("");
-    const { setIsLoggedIn } = useAuth();
+    const { login } = useAuth();
 
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         setLoginError("");
         const formData = new FormData(e.currentTarget);
 
-        try {
-            const response = await fetch('/api/login/', {
-                method: 'POST',
-                body: formData
-            });
+        const result = await login(formData);
 
-            if (response.ok) {
-                setIsLoggedIn(true); // Используем функцию из AuthContext
-                onLogin(true); // Сообщаем родительскому компоненту об успешной авторизации
-                setUsername("");
-                setPassword("");
-                onClose(); // Закрываем модальное окно
-            } else {
-                setLoginError("Неверное имя пользователя или пароль");
-            }
-        } catch (error) {
-            setLoginError("Ошибка при попытке входа");
-            console.error("Ошибка авторизации:", error);
+        if (result.success) {
+            onLogin(true);
+            setUsername("");
+            setPassword("");
+            onClose();
+        } else {
+            setLoginError(result.error || "Ошибка при попытке входа");
         }
     };
 
