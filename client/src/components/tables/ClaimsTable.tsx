@@ -1,10 +1,10 @@
-import {FC, useState, useMemo} from 'react';
+import {FC, useMemo} from 'react';
 import { AgGridReact } from 'ag-grid-react';
 import { AllCommunityModule, ModuleRegistry, ColDef, ICellRendererParams, CellClickedEvent, themeMaterial } from 'ag-grid-community';
+import { useNavigate } from 'react-router-dom';
 import AG_GRID_LOCALE_RU from '../../locale/AG_GRID_LOCALE_RU.ts';
 import { ClaimsData } from '../../types/machine.types';
 import '../../styles/Main.css';
-import {InfoModal} from "../InfoModal.tsx";
 
 ModuleRegistry.registerModules([AllCommunityModule]);
 
@@ -13,21 +13,7 @@ interface ClaimsTableProps {
 }
 
 export const ClaimsTable: FC<ClaimsTableProps> = ({ claim }) => {
-    const [modalInfo, setModalInfo] = useState<{ isOpen: boolean; title: string; description: string }>({
-        isOpen: false,
-        title: '',
-        description: ''
-    });
-
-    const handleTypeClick = (type: { name: string; description: string }) => {
-        if (type.description) {
-            setModalInfo({
-                isOpen: true,
-                title: type.name,
-                description: type.description
-            });
-        }
-    };
+    const navigate = useNavigate();
 
     const defaultColDef = useMemo(() => ({
         sortable: true,
@@ -46,20 +32,19 @@ export const ClaimsTable: FC<ClaimsTableProps> = ({ claim }) => {
             index: index + 1,
             serialNumber: claim.machine?.serial_number || '',
             machineWithDescription: !!claim.machine?.description,
+            machineId: claim.machine?.id,
             failureDate: claim.failure_date,
             operatingTime: claim.operating_time,
             failureNodeName: claim.failure_node?.name || '',
             failureNodeWithDescription: !!claim.failure_node?.description,
+            failureNodeId: claim.failure_node?.id,
             failureDescription: claim.failure_description,
             recoveryMethodName: claim.recovery_method?.name || '',
             recoveryMethodWithDescription: !!claim.recovery_method?.description,
+            recoveryMethodId: claim.recovery_method?.id,
             sparePartsUsed: claim.spare_parts_used,
             recoveryDate: claim.recovery_date,
-            downtime: claim.downtime,
-            // Сохраним оригинальные объекты для обработчиков нажатий
-            machineObj: claim.machine,
-            failureNodeObj: claim.failure_node,
-            recoveryMethodObj: claim.recovery_method
+            downtimeDays: claim.downtime
         }));
     }, [claim]);
 
@@ -77,8 +62,8 @@ export const ClaimsTable: FC<ClaimsTableProps> = ({ claim }) => {
             },
             cellStyle: { cursor: 'pointer' },
             onCellClicked: (params: CellClickedEvent<(typeof rowData)[0]>) => {
-                if (params.data?.machineWithDescription) {
-                    handleTypeClick(params.data.machineObj);
+                if (params.data?.machineWithDescription && params.data.machineId) {
+                    navigate(`/machines/${params.data.machineId}`);
                 }
             }
         },
@@ -95,8 +80,8 @@ export const ClaimsTable: FC<ClaimsTableProps> = ({ claim }) => {
             },
             cellStyle: { cursor: 'pointer' },
             onCellClicked: (params: CellClickedEvent<(typeof rowData)[0]>) => {
-                if (params.data?.failureNodeWithDescription) {
-                    handleTypeClick(params.data.failureNodeObj);
+                if (params.data?.failureNodeWithDescription && params.data.failureNodeId) {
+                    navigate(`/failure-nodes/${params.data.failureNodeId}`);
                 }
             }
         },
@@ -112,34 +97,26 @@ export const ClaimsTable: FC<ClaimsTableProps> = ({ claim }) => {
             },
             cellStyle: { cursor: 'pointer' },
             onCellClicked: (params: CellClickedEvent<(typeof rowData)[0]>) => {
-                if (params.data?.recoveryMethodWithDescription) {
-                    handleTypeClick(params.data.recoveryMethodObj);
+                if (params.data?.recoveryMethodWithDescription && params.data.recoveryMethodId) {
+                    navigate(`/recovery-methods/${params.data.recoveryMethodId}`);
                 }
             }
         },
         { headerName: 'Используемые запасные части', field: 'sparePartsUsed' },
         { headerName: 'Дата восстановления', field: 'recoveryDate' },
-        { headerName: 'Время простоя техники', field: 'downtime' }
-    ], []);
+        { headerName: 'Время простоя техники', field: 'downtimeDays' }
+    ], [navigate]);
 
     return (
-        <>
-            <AgGridReact
-                rowData={rowData}
-                columnDefs={columnDefs}
-                defaultColDef={defaultColDef}
-                theme={themeMaterial}
-                localeText={AG_GRID_LOCALE_RU}
-                domLayout='autoHeight'
-                rowHeight={40}
-                headerHeight={40}
-            />
-            <InfoModal
-                isOpen={modalInfo.isOpen}
-                title={modalInfo.title}
-                description={modalInfo.description}
-                onClose={() => setModalInfo({ ...modalInfo, isOpen: false })}
-            />
-        </>
+        <AgGridReact
+            rowData={rowData}
+            columnDefs={columnDefs}
+            defaultColDef={defaultColDef}
+            theme={themeMaterial}
+            localeText={AG_GRID_LOCALE_RU}
+            domLayout='autoHeight'
+            rowHeight={40}
+            headerHeight={40}
+        />
     );
 };

@@ -1,10 +1,10 @@
-import { FC, useState, useMemo } from 'react';
+import {FC, useMemo} from 'react';
 import { AgGridReact } from 'ag-grid-react';
 import { AllCommunityModule, ModuleRegistry, ColDef, ICellRendererParams, CellClickedEvent, themeMaterial } from 'ag-grid-community';
+import { useNavigate } from 'react-router-dom';
 import AG_GRID_LOCALE_RU from '../../locale/AG_GRID_LOCALE_RU.ts';
 import { MaintenanceData } from '../../types/machine.types';
 import '../../styles/Main.css';
-import { InfoModal } from '../InfoModal';
 
 ModuleRegistry.registerModules([AllCommunityModule]);
 
@@ -13,21 +13,7 @@ interface MaintenanceTableProps {
 }
 
 export const MaintenanceTable: FC<MaintenanceTableProps> = ({ maintenance }) => {
-    const [modalInfo, setModalInfo] = useState<{ isOpen: boolean; title: string; description: string }>({
-        isOpen: false,
-        title: '',
-        description: ''
-    });
-
-    const handleTypeClick = (type: { name: string; description: string }) => {
-        if (type.description) {
-            setModalInfo({
-                isOpen: true,
-                title: type.name,
-                description: type.description
-            });
-        }
-    };
+    const navigate = useNavigate();
 
     const defaultColDef = useMemo(() => ({
         sortable: true,
@@ -46,16 +32,15 @@ export const MaintenanceTable: FC<MaintenanceTableProps> = ({ maintenance }) => 
             index: index + 1,
             serialNumber: item.machine?.serial_number || '',
             machineWithDescription: !!item.machine?.description,
+            machineId: item.machine?.id,
             maintenanceType: item.maintenance_type?.name || '',
             maintenanceTypeWithDescription: !!item.maintenance_type?.description,
+            maintenanceTypeId: item.maintenance_type?.id,
             maintenanceDate: item.maintenance_date,
             operatingTime: item.operating_time,
             orderNumber: item.order_number,
             orderDate: item.order_date,
-            organization: item.organization,
-            // Сохраним оригинальные объекты для обработчиков нажатий
-            machineObj: item.machine,
-            maintenanceTypeObj: item.maintenance_type
+            organization: item.organization
         }));
     }, [maintenance]);
 
@@ -73,8 +58,8 @@ export const MaintenanceTable: FC<MaintenanceTableProps> = ({ maintenance }) => 
             },
             cellStyle: { cursor: 'pointer' },
             onCellClicked: (params: CellClickedEvent<(typeof rowData)[0]>) => {
-                if (params.data?.machineWithDescription) {
-                    handleTypeClick(params.data.machineObj);
+                if (params.data?.machineWithDescription && params.data.machineId) {
+                    navigate(`/machines/${params.data.machineId}`);
                 }
             }
         },
@@ -89,36 +74,28 @@ export const MaintenanceTable: FC<MaintenanceTableProps> = ({ maintenance }) => 
             },
             cellStyle: { cursor: 'pointer' },
             onCellClicked: (params: CellClickedEvent<(typeof rowData)[0]>) => {
-                if (params.data?.maintenanceTypeWithDescription) {
-                    handleTypeClick(params.data.maintenanceTypeObj);
+                if (params.data?.maintenanceTypeWithDescription && params.data.maintenanceTypeId) {
+                    navigate(`/maintenance-types/${params.data.maintenanceTypeId}`);
                 }
             }
         },
         { headerName: 'Дата проведения ТО', field: 'maintenanceDate' },
         { headerName: 'Наработка, м/час', field: 'operatingTime' },
         { headerName: '№ заказ-наряда', field: 'orderNumber' },
-        { headerName: 'дата заказ-наряда', field: 'orderDate' },
+        { headerName: 'Дата заказ-наряда', field: 'orderDate' },
         { headerName: 'Организация, проводившая ТО', field: 'organization' }
-    ], []);
+    ], [navigate]);
 
     return (
-        <>
-            <AgGridReact
-                rowData={rowData}
-                columnDefs={columnDefs}
-                defaultColDef={defaultColDef}
-                theme={themeMaterial}
-                localeText={AG_GRID_LOCALE_RU}
-                domLayout='autoHeight'
-                rowHeight={40}
-                headerHeight={40}
-            />
-            <InfoModal
-                isOpen={modalInfo.isOpen}
-                title={modalInfo.title}
-                description={modalInfo.description}
-                onClose={() => setModalInfo({ ...modalInfo, isOpen: false })}
-            />
-        </>
+        <AgGridReact
+            rowData={rowData}
+            columnDefs={columnDefs}
+            defaultColDef={defaultColDef}
+            theme={themeMaterial}
+            localeText={AG_GRID_LOCALE_RU}
+            domLayout='autoHeight'
+            rowHeight={40}
+            headerHeight={40}
+        />
     );
 };

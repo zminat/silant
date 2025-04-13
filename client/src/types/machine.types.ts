@@ -1,25 +1,30 @@
 export interface PublicMachineData {
     serial_number: string;
     model: {
+        id: Number;
         name: string;
         description: string;
     };
     engine_model: {
+        id: Number;
         name: string;
         description: string;
     };
     engine_serial_number: string;
     transmission_model: {
+        id: Number;
         name: string;
         description: string;
     };
     transmission_serial_number: string;
     drive_axle_model: {
+        id: Number;
         name: string;
         description: string;
     };
     drive_axle_serial_number: string;
     steering_axle_model: {
+        id: Number;
         name: string;
         description: string;
     };
@@ -48,11 +53,13 @@ export interface FullMachineData extends PublicMachineData {
 export interface MaintenanceData {
     id: number;
     machine: {
+        id: Number;
         serial_number: string;
         name: string;
         description: string;
     };
     maintenance_type: {
+        id: Number;
         name: string;
         description: string;
     };
@@ -72,6 +79,7 @@ export interface MaintenanceData {
 export interface ClaimsData {
     id: number;
     machine: {
+        id: Number;
         serial_number: string;
         name: string;
         description: string;
@@ -79,11 +87,13 @@ export interface ClaimsData {
     failure_date: string;
     operating_time: number;
     failure_node: {
+        id: Number;
         name: string;
         description: string;
     };
     failure_description: string;
     recovery_method: {
+        id: Number;
         name: string;
         description: string;
     };
