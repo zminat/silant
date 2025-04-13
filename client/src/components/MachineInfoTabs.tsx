@@ -24,7 +24,7 @@ export const MachineInfoTabs: FC<MachineInfoTabsProps> = ({ machines, maintenanc
         if (isLoggedIn && activeTab === 'maintenance') {
             const fetchFilteredMaintenance = async () => {
                 try {
-                    const response = await fetch('/api/user/maintenances');
+                    const response = await fetch('/api/maintenances');
                     if (response.ok) {
                         const data = await response.json();
                         setFilteredMaintenance(data);
@@ -49,7 +49,7 @@ export const MachineInfoTabs: FC<MachineInfoTabsProps> = ({ machines, maintenanc
         if (isLoggedIn && activeTab === 'claims') {
             const fetchFilteredClaims = async () => {
                 try {
-                    const response = await fetch('/api/user/claims');
+                    const response = await fetch('/api/claims');
                     if (response.ok) {
                         const data = await response.json();
                         setFilteredClaims(data);
