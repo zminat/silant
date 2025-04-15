@@ -1,6 +1,5 @@
 from django.contrib.auth.models import User
 from django.shortcuts import render
-from django import forms
 from rest_framework import status
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated, DjangoModelPermissions, AllowAny
@@ -168,7 +167,7 @@ class MachineViewSet(ReadOnlyModelViewSet):
 
 class MaintenanceViewSet(ReadOnlyModelViewSet):
     serializer_class = MaintenanceSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, CustomDjangoPermission]
 
     def get_queryset(self):
         user = self.request.user
@@ -192,6 +191,7 @@ class MaintenanceViewSet(ReadOnlyModelViewSet):
 
 class ClaimViewSet(ReadOnlyModelViewSet):
     serializer_class = ClaimSerializer
+    permission_classes = [IsAuthenticated, CustomDjangoPermission]
 
     def get_queryset(self):
         user = self.request.user
@@ -207,18 +207,3 @@ class ClaimViewSet(ReadOnlyModelViewSet):
             return Claim.objects.filter(machine__service_company=service_company)
 
         return Claim.objects.filter(machine__client=user)
-
-    def get_permissions(self):
-        return [IsAuthenticated(), CustomDjangoPermission()]
-
-
-class MaintenanceForm(forms.ModelForm):
-    organization = forms.ChoiceField(
-        choices=[(Maintenance.SELF_SERVICE, "Самостоятельно")] + [(sc.name, sc.name) for sc in
-                                                                  ServiceCompany.objects.all()],
-        required=True
-    )
-
-    class Meta:
-        model = Maintenance
-        fields = '__all__'

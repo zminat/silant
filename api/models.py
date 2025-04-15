@@ -2,24 +2,6 @@ from django.db import models
 from django.contrib.auth.models import User
 
 
-
-# def get_user_role(user):
-#     """
-#     Возвращает роль пользователя на основе его группы
-#     """
-#     if user.groups.filter(name='менеджер').exists():
-#         return 'менеджер'
-#     elif user.groups.filter(name='клиент').exists():
-#         return 'клиент'
-#     elif user.groups.filter(name='сервисная компания').exists():
-#         return 'сервисная компания'
-#     return 'неизвестный пользователь'
-#
-#
-# # Добавить метод в модель User
-# User.add_to_class('get_role', get_user_role)
-
-
 class BaseReference(models.Model):
     name = models.CharField(max_length=255, unique=True, verbose_name="Название")
     description = models.TextField(blank=True, null=True, verbose_name="Описание")
@@ -32,7 +14,6 @@ class BaseReference(models.Model):
 
 
 class MachineModel(BaseReference):
-
     class Meta:
         verbose_name = "Модель техники"
         verbose_name_plural = "Модели техники"
@@ -85,14 +66,17 @@ class ServiceCompany(models.Model):
     description = models.TextField(blank=True, verbose_name="Описание")
     users = models.ManyToManyField(User, related_name="service_companies", verbose_name="Пользователи")
     service_manager = models.OneToOneField(User, on_delete=models.SET_NULL, null=True,
-                                   related_name="service_company", verbose_name="Руководитель")
+                                           related_name="service_company", verbose_name="Руководитель")
 
     def __str__(self):
         return self.name
 
+    class Meta:
+        verbose_name = "Сервисная компания"
+        verbose_name_plural = "Сервисные компании"
+
 
 class Machine(models.Model):
-    # Модель с данными о машинах, их характеристиках и комплектации.
     serial_number = models.CharField(max_length=255, unique=True, verbose_name="Заводской номер машины")
     model = models.ForeignKey(MachineModel, on_delete=models.PROTECT, verbose_name="Модель техники")
     engine_model = models.ForeignKey(EngineModel, on_delete=models.PROTECT, verbose_name="Модель двигателя")
@@ -122,7 +106,6 @@ class Machine(models.Model):
 
 
 class Maintenance(models.Model):
-    # Модель, которая содержит информацию о проведённых технических обслуживаниях.
     SELF_SERVICE = "Самостоятельно"
     machine = models.ForeignKey(Machine, on_delete=models.CASCADE, related_name='maintenances', verbose_name="Машина")
     maintenance_type = models.ForeignKey(MaintenanceType, on_delete=models.PROTECT, verbose_name="Вид ТО")
@@ -130,21 +113,20 @@ class Maintenance(models.Model):
     operating_time = models.PositiveIntegerField(verbose_name="Наработка, м/час")
     order_number = models.CharField(max_length=255, verbose_name="Номер заказ-наряда")
     order_date = models.DateField(verbose_name="Дата заказ-наряда")
-    ORGANIZATION_CHOICES = [
-                               (SELF_SERVICE, "Самостоятельно")
-                           ] + [(sc.name, sc.name) for sc in ServiceCompany.objects.all()]
-
-    organization = models.CharField(
-        max_length=255,
-        choices=ORGANIZATION_CHOICES,
-        verbose_name="Организация, проводившая ТО",
-        default=SELF_SERVICE
+    organization = models.ForeignKey(
+        ServiceCompany,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        verbose_name="Организация, проводившая ТО"
     )
-
     service_company = models.ForeignKey(
         ServiceCompany, on_delete=models.PROTECT, related_name='service_maintenances',
         verbose_name="Сервисная компания"
     )
+
+    def get_organization_display(self):
+        return self.SELF_SERVICE if self.organization is None else str(self.organization)
 
     def __str__(self):
         return f"ТО {self.machine.serial_number}"
@@ -155,7 +137,6 @@ class Maintenance(models.Model):
 
 
 class Claim(models.Model):
-    # Модель фиксирует рекламации, связанные с отказами машин
     failure_date = models.DateField(verbose_name="Дата отказа")
     operating_time = models.PositiveIntegerField(verbose_name="Наработка, м/час")
     failure_node = models.ForeignKey(FailureNode, on_delete=models.PROTECT, verbose_name="Узел отказа")
@@ -168,7 +149,6 @@ class Claim(models.Model):
                                         verbose_name="Сервисная компания")
 
     @property
-    # Вычисляемое поле, которое рассчитывает время простоя техники по датам отказа и восстановления.
     def downtime(self):
         return (self.recovery_date - self.failure_date).days
 

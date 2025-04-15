@@ -77,9 +77,10 @@ class UserSerializer(serializers.ModelSerializer):
 class MaintenanceSerializer(serializers.ModelSerializer):
     maintenance_type = MaintenanceTypeSerializer(read_only=True)
     machine = serializers.SerializerMethodField()
-    organization = serializers.ChoiceField(read_only=True, choices=[(Maintenance.SELF_SERVICE, "Самостоятельно")] + [
-        (sc.name, sc.name) for sc in ServiceCompany.objects.all()
-    ])
+    organization = serializers.SerializerMethodField()
+
+    def get_organization(self, obj):
+        return obj.get_organization_display()
 
     def get_machine(self, obj):
         return {"serial_number": obj.machine.serial_number} if obj.machine else None
