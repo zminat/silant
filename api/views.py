@@ -124,7 +124,7 @@ class MachineViewSet(ReadOnlyModelViewSet):
         if not user.is_authenticated:
             return Machine.objects.none()
 
-        if user.is_superuser:
+        if user.is_staff:
             return Machine.objects.all()
 
         service_company = ServiceCompany.objects.filter(service_manager=user).first()
@@ -148,9 +148,9 @@ class MachineViewSet(ReadOnlyModelViewSet):
         }
 
         permissions = {
-            'can_edit': request.user.has_perm('machines.change_machine'),
-            'can_delete': request.user.has_perm('machines.delete_machine'),
-            'can_create': request.user.has_perm('machines.add_machine'),
+            'can_edit': request.user.has_perm('api.change_machine'),
+            'can_delete': request.user.has_perm('api.delete_machine'),
+            'can_create': request.user.has_perm('api.add_machine'),
         }
 
         return Response({
@@ -172,20 +172,16 @@ class MaintenanceViewSet(ReadOnlyModelViewSet):
     def get_queryset(self):
         user = self.request.user
 
-        # Проверяем аутентификацию
         if not user.is_authenticated:
             return Maintenance.objects.none()
 
-        # Для суперпользователя показываем все ТО
-        if user.is_superuser:
+        if user.is_staff:
             return Maintenance.objects.all()
 
-        # Сервисной компании показываем ТО закрепленных за ней машин
         service_company = ServiceCompany.objects.filter(service_manager=user).first()
         if service_company:
             return Maintenance.objects.filter(machine__service_company=service_company)
 
-        # Для клиентов показываем ТО только их машин
         return Maintenance.objects.filter(machine__client=user)
 
 
@@ -199,7 +195,7 @@ class ClaimViewSet(ReadOnlyModelViewSet):
         if not user.is_authenticated:
             return Claim.objects.none()
 
-        if user.is_superuser:
+        if user.is_staff:
             return Claim.objects.all()
 
         service_company = ServiceCompany.objects.filter(service_manager=user).first()
