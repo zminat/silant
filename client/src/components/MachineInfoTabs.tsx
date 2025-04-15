@@ -1,6 +1,6 @@
 import { FC, useState, useEffect } from 'react';
-import { AuthenticatedMachineTable } from './tables/AuthenticatedMachineTable';
-import {ClaimsData, FullMachineData, MaintenanceData} from '../types/machine.types';
+import {MachineTable} from './tables/MachineTable.tsx';
+import {ClaimsData, MachineTableProps, MaintenanceData} from '../types/machine.types';
 import '../styles/MachineInfoTabs.css';
 import { MaintenanceTable } from "./tables/MaintenanceTable.tsx";
 import { useAuth } from './AuthContext.tsx';
@@ -9,7 +9,7 @@ import {ClaimsTable} from "./tables/ClaimsTable.tsx";
 type TabType = 'machines' | 'maintenance' | 'claims';
 
 interface MachineInfoTabsProps {
-    machines: FullMachineData[];
+    machines: MachineTableProps;
     maintenance: MaintenanceData[];
     claim: ClaimsData[];
 }
@@ -97,7 +97,7 @@ export const MachineInfoTabs: FC<MachineInfoTabsProps> = ({ machines, maintenanc
                 </div>
             </div>
             <div className="table-container">
-                {activeTab === 'machines' && <AuthenticatedMachineTable machines={machines} />}
+                {activeTab === 'machines' && <MachineTable machines={machines.machines} dictionaries={machines.dictionaries} permissions={machines.permissions} isAuthenticated={true}/>}
                 {activeTab === 'maintenance' && <div><MaintenanceTable maintenance={filteredMaintenance} /></div>}
                 {activeTab === 'claims' && <div><ClaimsTable claim={filteredClaims} /></div>}
             </div>

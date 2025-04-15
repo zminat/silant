@@ -1,54 +1,41 @@
-export interface PublicMachineData {
+export interface MachineData {
+    id?: number;
+    model_id: number;
     serial_number: string;
-    model: {
-        id: Number;
-        name: string;
-        description: string;
-    };
-    engine_model: {
-        id: Number;
-        name: string;
-        description: string;
-    };
+    engine_model_id: number;
     engine_serial_number: string;
-    transmission_model: {
-        id: Number;
-        name: string;
-        description: string;
-    };
+    transmission_model_id: number;
     transmission_serial_number: string;
-    drive_axle_model: {
-        id: Number;
-        name: string;
-        description: string;
-    };
+    drive_axle_model_id: number;
     drive_axle_serial_number: string;
-    steering_axle_model: {
-        id: Number;
-        name: string;
-        description: string;
-    };
+    steering_axle_model_id: number;
     steering_axle_serial_number: string;
+    shipment_date?: string;
+    client_id?: number;
+    consignee?: string;
+    delivery_address?: string;
+    equipment?: string;
+    service_company_id?: number;
 }
 
-export interface FullMachineData extends PublicMachineData {
-    id: number;
-    shipment_date: string;
-    client: {
-        id: number;
-        username: string;
-        first_name: string;
+export interface MachineTableProps {
+    machines: MachineData[];
+    dictionaries: {
+        models: any[];
+        engine_models: any[];
+        transmission_models: any[];
+        drive_axle_models: any[];
+        steering_axle_models: any[];
+        service_companies?: any[];
+        clients?: any[];
     };
-    consignee: string;
-    delivery_address: string;
-    equipment: string;
-    service_company: {
-        id: number;
-        name: string;
-        description: string;
+    permissions: {
+        can_edit: boolean;
+        can_delete: boolean;
+        can_create: boolean;
     };
+    isAuthenticated?: boolean;
 }
-
 
 export interface MaintenanceData {
     id: number;

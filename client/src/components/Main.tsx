@@ -1,27 +1,41 @@
 import "../styles/Main.css";
 import { useEffect, useState } from "react";
 import { useAuth } from "./AuthContext";
-import { PublicMachineTable } from './tables/PublicMachineTable';
 import { MachineInfoTabs } from './MachineInfoTabs';
-import {PublicMachineData, FullMachineData, MaintenanceData, ClaimsData} from '../types/machine.types';
+import {MachineTableProps, MaintenanceData, ClaimsData} from '../types/machine.types';
+import {MachineTable} from "./tables/MachineTable.tsx";
 
 const Main = () => {
     const { isLoggedIn } = useAuth();
     const [serialNumber, setSerialNumber] = useState<string>('');
-    const [publicMachine, setPublicMachine] = useState<PublicMachineData | null>(null);
-    const [userMachines, setUserMachines] = useState<FullMachineData[]>([]);
+    const [machines, setMachines] = useState<MachineTableProps | null>(null);
     const [maintenanceData, setMaintenanceData] = useState<MaintenanceData[]>([]);
     const [claimData, setClaimData] = useState<ClaimsData[]>([]);
     const [loading, setLoading] = useState<boolean>(false);
     const [error, setError] = useState<string>('');
 
+    const fetchMachinesData = async () => {
+        try {
+
+            const response = await fetch('/api/machines/');
+            if (!response.ok) {
+                setError('Ошибка при получении данных');
+            }
+            const data = await response.json();
+            setMachines(data);
+        } catch (err) {
+            console.error('Ошибка при получении данных о машинах:', err);
+        }
+    };
+
     const fetchMaintenanceData = async () => {
         try {
             const response = await fetch('/api/maintenances/');
-            if (response.ok) {
-                const data = await response.json();
-                setMaintenanceData(data);
+            if (!response.ok) {
+                setError('Ошибка при получении данных');
             }
+            const data = await response.json();
+            setMaintenanceData(data);
         } catch (err) {
             console.error('Ошибка при получении данных о ТО:', err);
         }
@@ -30,45 +44,58 @@ const Main = () => {
     const fetchClaimsData = async () => {
         try {
             const response = await fetch('/api/claims/');
-            if (response.ok) {
-                const data = await response.json();
-                setClaimData(data);
+            if (!response.ok) {
+                setError('Ошибка при получении данных');
             }
+            const data = await response.json();
+            setClaimData(data);
         } catch (err) {
             console.error('Ошибка при получении данных о рекламациях:', err);
         }
     };
 
-    const handleSearch = async () => {
+    const handleLoading = async() => {
         setLoading(true);
         setError('');
-        setPublicMachine(null);
+        setMachines(null);
+        setMaintenanceData([]);
+        setClaimData([]);
 
         try {
             if (isLoggedIn) {
-                const response = await fetch('/api/machines/');
-                if (!response.ok) {
-                    setError('Ошибка при получении данных');
-                }
-                const data = await response.json();
-                setUserMachines(data);
-
-                // Загружаем данные о ТО и рекламациях после загрузки машин
+                await fetchMachinesData();
                 await fetchMaintenanceData();
                 await fetchClaimsData();
-            } else {
+            }
+        } catch (err) {
+            setError(err instanceof Error ? err.message : 'Произошла ошибка');
+        } finally {
+            setLoading(false);
+        }
+    }
+
+    const handleSearch = async () => {
+        setLoading(true);
+        setError('');
+        setMachines(null);
+        setMaintenanceData([]);
+        setClaimData([]);
+
+        try {
+            if (!isLoggedIn) {
                 if (!serialNumber.trim()) {
                     setError('Введите заводской номер');
+                    return;
                 }
 
-                const response = await fetch(`/api/public-machine-info/?serial_number=${serialNumber}`);
-
+                const response = await fetch(`/api/machines/public_info/?serial_number=${serialNumber}`);
                 if (!response.ok) {
                     setError('Машина не найдена');
+                    return;
                 }
 
                 const data = await response.json();
-                setPublicMachine(data);
+                setMachines(data);
             }
         } catch (err) {
             setError(err instanceof Error ? err.message : 'Произошла ошибка');
@@ -83,11 +110,8 @@ const Main = () => {
         }
     };
 
-
     useEffect(() => {
-        if (isLoggedIn) {
-            handleSearch();
-        }
+        handleLoading();
     }, [isLoggedIn]);
 
     return (
@@ -99,9 +123,9 @@ const Main = () => {
                         <p>Загрузка данных...</p>
                     ) : error ? (
                         <div className="error-message">{error}</div>
-                    ) : userMachines.length > 0 ? (
+                    ) : machines && machines.machines.length > 0 ? (
                         <div className="table-container">
-                            <MachineInfoTabs machines={userMachines} maintenance={maintenanceData} claim={claimData}/>
+                            <MachineInfoTabs machines={machines} maintenance={maintenanceData} claim={claimData}/>
                         </div>
                     ) : (
                         <p>У вас пока нет машин</p>
@@ -143,11 +167,11 @@ const Main = () => {
                         </div>
                     )}
 
-                    {!loading && publicMachine && (
+                    {!loading && machines && (
                         <div className="result-container">
                             <h3>Результаты поиска:</h3>
                             <div className="table-container">
-                                <PublicMachineTable machine={publicMachine} />
+                                <MachineTable machines={machines.machines} dictionaries={machines.dictionaries} permissions={machines.permissions} isAuthenticated={false} />
                             </div>
                         </div>
                     )}

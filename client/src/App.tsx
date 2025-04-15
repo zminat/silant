@@ -20,6 +20,7 @@ function App() {
                     <Route path="/maintenance-types/:id" element={<ReferenceDetail type="maintenance-types" title="Вид ТО" />} />
                     <Route path="/failure-nodes/:id" element={<ReferenceDetail type="failure-nodes" title="Узел отказа" />} />
                     <Route path="/recovery-methods/:id" element={<ReferenceDetail type="recovery-methods" title="Способ восстановления" />} />
+                    <Route path="/service-companies/:id" element={<ReferenceDetail type="service-companies" title="Сервисная компания" />} />
                 </Routes>
             </main>
             <Footer />

@@ -1,15 +1,17 @@
+from django.contrib.auth.models import User
 from django.shortcuts import render
 from django import forms
 from rest_framework import status
-from rest_framework.permissions import IsAuthenticated, DjangoModelPermissions
+from rest_framework.decorators import action
+from rest_framework.permissions import IsAuthenticated, DjangoModelPermissions, AllowAny
 from rest_framework.response import Response
-from rest_framework.views import APIView
 from rest_framework.viewsets import ReadOnlyModelViewSet
 from .models import Machine, Maintenance, Claim, ServiceCompany, MachineModel, EngineModel, TransmissionModel, \
     DriveAxleModel, SteeringAxleModel, MaintenanceType, FailureNode, RecoveryMethod
-from .serializers import MachineSerializer, MaintenanceSerializer, ClaimSerializer, MachineModelSerializer, \
+from .serializers import MaintenanceSerializer, ClaimSerializer, MachineModelSerializer, \
     EngineModelSerializer, TransmissionModelSerializer, DriveAxleModelSerializer, SteeringAxleModelSerializer, \
-    MaintenanceTypeSerializer, FailureNodeSerializer, RecoveryMethodSerializer
+    MaintenanceTypeSerializer, FailureNodeSerializer, RecoveryMethodSerializer, MachineListSerializer, UserSerializer, \
+    MachineLimitedListSerializer, ServiceCompanySerializer
 
 
 def homepage(request, id=None):
@@ -17,7 +19,7 @@ def homepage(request, id=None):
 
 
 class BaseReferenceViewSet(ReadOnlyModelViewSet):
-    permission_classes = []
+    permission_classes = [AllowAny]
 
 
 class MachineModelViewSet(BaseReferenceViewSet):
@@ -60,76 +62,12 @@ class RecoveryMethodViewSet(BaseReferenceViewSet):
     serializer_class = RecoveryMethodSerializer
 
 
-class PublicMachineInfoView(APIView):
-    """
-    APIView для предоставления публичного доступа к ограниченной информации о машине
-    по заводскому номеру без необходимости авторизации
-    """
-    permission_classes = []  # Публичный доступ без авторизации
-
-    def get(self, request):
-        """
-        Получение информации о машине по заводскому номеру
-        """
-        serial_number = request.query_params.get('serial_number', None)
-
-        if not serial_number:
-            return Response(
-                {"error": "Необходимо указать заводской номер машины"},
-                status=status.HTTP_400_BAD_REQUEST
-            )
-
-        try:
-            machine = Machine.objects.get(serial_number=serial_number)
-
-            # Ограничиваем выдаваемые данные только базовой информацией
-            limited_data = {
-                'serial_number': machine.serial_number,
-                'model': {
-                    'id': machine.model.id,
-                    'name': machine.model.name,
-                    'description': machine.model.description
-                } if machine.model else None,
-                'engine_model': {
-                    'id': machine.engine_model.id,
-                    'name': machine.engine_model.name,
-                    'description': machine.engine_model.description
-                } if machine.engine_model else None,
-                'engine_serial_number': machine.engine_serial_number,
-                'transmission_model': {
-                    'id': machine.transmission_model.id,
-                    'name': machine.transmission_model.name,
-                    'description': machine.transmission_model.description
-                } if machine.transmission_model else None,
-                'transmission_serial_number': machine.transmission_serial_number,
-                'drive_axle_model': {
-                    'id': machine.drive_axle_model.id,
-                    'name': machine.drive_axle_model.name,
-                    'description': machine.drive_axle_model.description
-                } if machine.drive_axle_model else None,
-                'drive_axle_serial_number': machine.drive_axle_serial_number,
-                'steering_axle_model': {
-                    'id': machine.steering_axle_model.id,
-                    'name': machine.steering_axle_model.name,
-                    'description': machine.steering_axle_model.description
-                } if machine.steering_axle_model else None,
-                'steering_axle_serial_number': machine.steering_axle_serial_number
-            }
-
-            return Response(limited_data)
-
-        except Machine.DoesNotExist:
-            return Response(
-                {"error": f"Машина с заводским номером {serial_number} не найдена"},
-                status=status.HTTP_404_NOT_FOUND
-            )
+class ServiceCompanyViewSet(BaseReferenceViewSet):
+    queryset = ServiceCompany.objects.all()
+    serializer_class = ServiceCompanySerializer
 
 
 class CustomDjangoPermission(DjangoModelPermissions):
-    """
-    Пользовательское разрешение на основе разрешений Django.
-    Проверяет наличие соответствующих разрешений в зависимости от метода запроса.
-    """
     perms_map = {
         'GET': ['%(app_label)s.view_%(model_name)s'],
         'OPTIONS': [],
@@ -142,7 +80,44 @@ class CustomDjangoPermission(DjangoModelPermissions):
 
 
 class MachineViewSet(ReadOnlyModelViewSet):
-    serializer_class = MachineSerializer
+    serializer_class = MachineListSerializer
+
+    @action(detail=False, methods=['get'], permission_classes=[AllowAny])
+    def public_info(self, request):
+        serial_number = request.query_params.get('serial_number', None)
+        if not serial_number:
+            return Response(
+                {"error": "Необходимо указать заводской номер машины"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        try:
+            machines = MachineLimitedListSerializer(Machine.objects.filter(serial_number=serial_number), many=True).data
+            dictionaries = {
+                'models': MachineModelSerializer(MachineModel.objects.all(), many=True).data,
+                'engine_models': EngineModelSerializer(EngineModel.objects.all(), many=True).data,
+                'transmission_models': TransmissionModelSerializer(TransmissionModel.objects.all(), many=True).data,
+                'drive_axle_models': DriveAxleModelSerializer(DriveAxleModel.objects.all(), many=True).data,
+                'steering_axle_models': SteeringAxleModelSerializer(SteeringAxleModel.objects.all(), many=True).data,
+            }
+
+            permissions = {
+                'can_edit': request.user.has_perm('machines.change_machine'),
+                'can_delete': request.user.has_perm('machines.delete_machine'),
+                'can_create': request.user.has_perm('machines.add_machine'),
+            }
+
+            return Response({
+                'machines': machines,
+                'dictionaries': dictionaries,
+                'permissions': permissions
+            })
+
+        except Machine.DoesNotExist:
+            return Response(
+                {"error": f"Машина с заводским номером {serial_number} не найдена"},
+                status=status.HTTP_404_NOT_FOUND
+            )
 
     def get_queryset(self):
         user = self.request.user
@@ -150,22 +125,44 @@ class MachineViewSet(ReadOnlyModelViewSet):
         if not user.is_authenticated:
             return Machine.objects.none()
 
-        # Суперпользователю показываем все машины
         if user.is_superuser:
             return Machine.objects.all()
 
-        # Сервисной компании показываем закрепленные за ней машины
         service_company = ServiceCompany.objects.filter(service_manager=user).first()
         if service_company:
             return Machine.objects.filter(service_company=service_company)
 
-        # Обычным клиентам показываем только их машины
         return Machine.objects.filter(client=user)
 
+    def list(self, request, *args, **kwargs):
+        queryset = self.get_queryset()
+        machines = self.get_serializer(queryset, many=True).data
+
+        dictionaries = {
+            'models': MachineModelSerializer(MachineModel.objects.all(), many=True).data,
+            'engine_models': EngineModelSerializer(EngineModel.objects.all(), many=True).data,
+            'transmission_models': TransmissionModelSerializer(TransmissionModel.objects.all(), many=True).data,
+            'drive_axle_models': DriveAxleModelSerializer(DriveAxleModel.objects.all(), many=True).data,
+            'steering_axle_models': SteeringAxleModelSerializer(SteeringAxleModel.objects.all(), many=True).data,
+            'service_companies': ServiceCompanySerializer(ServiceCompany.objects.all(), many=True).data,
+            'clients': UserSerializer(User.objects.all(), many=True).data,
+        }
+
+        permissions = {
+            'can_edit': request.user.has_perm('machines.change_machine'),
+            'can_delete': request.user.has_perm('machines.delete_machine'),
+            'can_create': request.user.has_perm('machines.add_machine'),
+        }
+
+        return Response({
+            'machines': machines,
+            'dictionaries': dictionaries,
+            'permissions': permissions
+        })
+
     def get_permissions(self):
-        """
-        Возвращает разрешения в зависимости от действия.
-        """
+        if self.action == 'public_info':
+            return [AllowAny()]
         return [IsAuthenticated(), CustomDjangoPermission()]
 
 
@@ -202,22 +199,16 @@ class ClaimViewSet(ReadOnlyModelViewSet):
         if not user.is_authenticated:
             return Claim.objects.none()
 
-        # Суперпользователю показываем все рекламации
         if user.is_superuser:
             return Claim.objects.all()
 
-        # Сервисной компании показываем рекламации закрепленных за ней машин
         service_company = ServiceCompany.objects.filter(service_manager=user).first()
         if service_company:
             return Claim.objects.filter(machine__service_company=service_company)
 
-        # Обычным клиентам показываем только их машины
         return Claim.objects.filter(machine__client=user)
 
     def get_permissions(self):
-        """
-        Возвращает разрешения в зависимости от действия.
-        """
         return [IsAuthenticated(), CustomDjangoPermission()]
 
 

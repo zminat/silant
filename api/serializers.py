@@ -59,9 +59,19 @@ class ServiceCompanySerializer(serializers.ModelSerializer):
 
 
 class UserSerializer(serializers.ModelSerializer):
+    name = serializers.SerializerMethodField()
+
     class Meta:
         model = User
-        fields = ('id', 'username', 'first_name')  # , 'role')
+        fields = ('id', 'name')
+
+    def get_name(self, obj):
+        if hasattr(obj, 'service_company') and obj.service_company:
+            return obj.service_company.name
+        elif obj.first_name:
+            return obj.first_name
+        else:
+            return obj.username
 
 
 class MaintenanceSerializer(serializers.ModelSerializer):
@@ -108,3 +118,46 @@ class MachineSerializer(serializers.ModelSerializer):
     class Meta:
         model = Machine
         fields = '__all__'
+
+
+class MachineListSerializer(serializers.ModelSerializer):
+    model_id = serializers.PrimaryKeyRelatedField(source='model', read_only=True)
+    engine_model_id = serializers.PrimaryKeyRelatedField(source='engine_model', read_only=True)
+    transmission_model_id = serializers.PrimaryKeyRelatedField(source='transmission_model', read_only=True)
+    drive_axle_model_id = serializers.PrimaryKeyRelatedField(source='drive_axle_model', read_only=True)
+    steering_axle_model_id = serializers.PrimaryKeyRelatedField(source='steering_axle_model', read_only=True)
+    service_company_id = serializers.PrimaryKeyRelatedField(source='service_company', read_only=True)
+    client_id = serializers.PrimaryKeyRelatedField(source='client', read_only=True)
+
+    class Meta:
+        model = Machine
+        fields = [
+            'id', 'serial_number',
+            'model_id',
+            'engine_model_id', 'engine_serial_number',
+            'transmission_model_id', 'transmission_serial_number',
+            'drive_axle_model_id', 'drive_axle_serial_number',
+            'steering_axle_model_id', 'steering_axle_serial_number',
+            'shipment_date', 'consignee', 'delivery_address', 'equipment',
+            'service_company_id',
+            'client_id'
+        ]
+
+
+class MachineLimitedListSerializer(serializers.ModelSerializer):
+    model_id = serializers.PrimaryKeyRelatedField(source='model', read_only=True)
+    engine_model_id = serializers.PrimaryKeyRelatedField(source='engine_model', read_only=True)
+    transmission_model_id = serializers.PrimaryKeyRelatedField(source='transmission_model', read_only=True)
+    drive_axle_model_id = serializers.PrimaryKeyRelatedField(source='drive_axle_model', read_only=True)
+    steering_axle_model_id = serializers.PrimaryKeyRelatedField(source='steering_axle_model', read_only=True)
+
+    class Meta:
+        model = Machine
+        fields = [
+            'id', 'serial_number',
+            'model_id',
+            'engine_model_id', 'engine_serial_number',
+            'transmission_model_id', 'transmission_serial_number',
+            'drive_axle_model_id', 'drive_axle_serial_number',
+            'steering_axle_model_id', 'steering_axle_serial_number'
+        ]
