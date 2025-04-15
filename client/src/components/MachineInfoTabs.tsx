@@ -1,16 +1,16 @@
 import { FC, useState } from 'react';
 import {MachineTable} from './tables/MachineTable.tsx';
-import {ClaimsData, MachineTableProps, MaintenanceTableProps} from '../types/machine.types';
+import {MachineTableProps, MaintenanceTableProps, ClaimTableProps} from '../types/machine.types';
 import '../styles/MachineInfoTabs.css';
 import { MaintenanceTable } from "./tables/MaintenanceTable.tsx";
-import {ClaimsTable} from "./tables/ClaimsTable.tsx";
+import {ClaimTable} from "./tables/ClaimTable.tsx";
 
 type TabType = 'machines' | 'maintenances' | 'claims';
 
 interface MachineInfoTabsProps {
     machines: MachineTableProps;
     maintenances: MaintenanceTableProps;
-    claims: ClaimsData[];
+    claims: ClaimTableProps;
 }
 
 export const MachineInfoTabs: FC<MachineInfoTabsProps> = ({ machines, maintenances, claims }) => {
@@ -44,8 +44,8 @@ export const MachineInfoTabs: FC<MachineInfoTabsProps> = ({ machines, maintenanc
             </div>
             <div className="table-container">
                 {activeTab === 'machines' && <MachineTable machines={machines.machines} dictionaries={machines.dictionaries} permissions={machines.permissions} isAuthenticated={true}/>}
-                {activeTab === 'maintenances' && <MaintenanceTable maintenances={maintenances.maintenances} dictionaries={maintenances.dictionaries} permissions={maintenances.permissions} />}
-                {activeTab === 'claims' && <ClaimsTable claim={claims} />}
+                {activeTab === 'maintenances' && <MaintenanceTable maintenances={maintenances.maintenances} dictionaries={maintenances.dictionaries} permissions={maintenances.permissions}/>}
+                {activeTab === 'claims' && <ClaimTable claims={claims.claims} dictionaries={claims.dictionaries} permissions={claims.permissions}/>}
             </div>
         </div>
     );

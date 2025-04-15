@@ -190,7 +190,8 @@ class MaintenanceViewSet(ReadOnlyModelViewSet):
         dictionaries = {
             'machines': MachineLimitedSerializer(Machine.objects.all(), many=True).data,
             'maintenance_types': MaintenanceTypeSerializer(MaintenanceType.objects.all(), many=True).data,
-            'organizations': [{'id': -1, 'name': Maintenance.SELF_SERVICE}] + ServiceCompanySerializer(ServiceCompany.objects.all(), many=True).data,
+            'organizations': [{'id': -1, 'name': Maintenance.SELF_SERVICE}] + ServiceCompanySerializer(
+                ServiceCompany.objects.all(), many=True).data,
         }
 
         permissions = {
@@ -224,3 +225,25 @@ class ClaimViewSet(ReadOnlyModelViewSet):
             return Claim.objects.filter(machine__service_company=service_company)
 
         return Claim.objects.filter(machine__client=user)
+
+    def list(self, request, *args, **kwargs):
+        queryset = self.get_queryset()
+        claims = self.get_serializer(queryset, many=True).data
+
+        dictionaries = {
+            'machines': MachineLimitedSerializer(Machine.objects.all(), many=True).data,
+            'failure_nodes': FailureNodeSerializer(FailureNode.objects.all(), many=True).data,
+            'recovery_methods': RecoveryMethodSerializer(RecoveryMethod.objects.all(), many=True).data,
+        }
+
+        permissions = {
+            'can_create': request.user.has_perm('api.add_claim'),
+            'can_edit': request.user.has_perm('api.change_claim'),
+            'can_delete': request.user.has_perm('api.delete_claim'),
+        }
+
+        return Response({
+            'claims': claims,
+            'dictionaries': dictionaries,
+            'permissions': permissions
+        })

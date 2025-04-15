@@ -13,6 +13,12 @@ export type ModelColumnConfig = {
     urlPrefix: string;
 };
 
+export const createSerialNumberOptionsFromDictionary = (items: any[]) =>
+    items.map(item => ({
+        value: item.id,
+        label: item.serial_number
+    }));
+
 export const createOptionsFromDictionary = (items: any[]) =>
     items.map(item => ({
         value: item.id,
@@ -23,6 +29,39 @@ export const createSimpleColumn = (headerName: string, field: string): ColDef =>
     return {
         headerName,
         field,
+    };
+};
+
+export const createSerialNumberColumn = ({headerName, field, options, urlPrefix}: ModelColumnConfig): ColDef => {
+    return {
+        headerName,
+        field,
+        cellEditor: 'agSelectCellEditor',
+        cellEditorParams: {
+            values: options.map(option => option.value),
+            cellRenderer: (params: any) => {
+                const option = options.find(opt => opt.value === params.value);
+                return option ? option.label : '';
+            }
+        } as any,
+        valueFormatter: (params) => {
+            if (params.value === undefined || params.value === null) return '';
+            const option = options.find(opt => opt.value === params.value);
+            return option ? option.label : params.value;
+        },
+        filter: 'agTextColumnFilter',
+        filterValueGetter: params => {
+            const option = options.find(opt => opt.value === params.data?.[field]);
+            return option ? option.label : '';
+        },
+        cellRenderer: (params: ICellRendererParams) => {
+            if (!params.data?.[field]) return '';
+            const option = options.find(opt => opt.value === params.value);
+            const displayValue = option ? option.label : '';
+            return (
+                <Link to={`${urlPrefix}/${displayValue}`}>{displayValue}</Link>
+            );
+        }
     };
 };
 
@@ -37,7 +76,7 @@ export const createReferenceColumn = ({headerName, field, options, urlPrefix}: M
                 const option = options.find(opt => opt.value === params.value);
                 return option ? option.label : '';
             }
-        } as any,
+        },
         valueFormatter: (params) => {
             if (params.value === undefined || params.value === null) return '';
             const option = options.find(opt => opt.value === params.value);

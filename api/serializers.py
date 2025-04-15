@@ -134,15 +134,16 @@ class MaintenanceSerializer(serializers.ModelSerializer):
 
 
 class ClaimSerializer(serializers.ModelSerializer):
-    machine = serializers.SerializerMethodField()
-    failure_node = FailureNodeSerializer(read_only=True)
-    recovery_method = RecoveryMethodSerializer(read_only=True)
-    service_company = ServiceCompanySerializer(read_only=True)
-    downtime = serializers.IntegerField(read_only=True)  # Автоматически рассчитывается
-
-    def get_machine(self, obj):
-        return {"serial_number": obj.machine.serial_number} if obj.machine else None
+    machine_id = serializers.PrimaryKeyRelatedField(source='machine', read_only=True)
+    failure_node_id = serializers.PrimaryKeyRelatedField(source='failure_node', read_only=True)
+    recovery_method_id = serializers.PrimaryKeyRelatedField(source='recovery_method', read_only=True)
 
     class Meta:
         model = Claim
-        fields = '__all__'
+        fields = [
+            'id', 'machine_id',
+            'failure_date',
+            'operating_time', 'failure_node_id',
+            'failure_description', 'recovery_method_id',
+            'spare_parts_used', 'recovery_date'
+        ]

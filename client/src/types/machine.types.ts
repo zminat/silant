@@ -62,28 +62,29 @@ export interface MaintenanceTableProps {
     };
 }
 
-export interface ClaimsData {
+export interface ClaimData {
     id: number;
-    machine: {
-        id: number;
-        serial_number: string;
-        name: string;
-        description: string;
-    };
+    machine_id: number;
     failure_date: string;
     operating_time: number;
-    failure_node: {
-        id: number;
-        name: string;
-        description: string;
-    };
+    failure_node_id: number;
     failure_description: string;
-    recovery_method: {
-        id: number;
-        name: string;
-        description: string;
-    };
+    recovery_method_id: number;
     spare_parts_used: string;
     recovery_date: string;
     downtime: number;
+}
+
+export interface ClaimTableProps {
+    claims: ClaimData[];
+    dictionaries: {
+        machines: any[];
+        failure_nodes: any[];
+        recovery_methods: any[];
+    };
+    permissions: {
+        can_create: boolean;
+        can_edit: boolean;
+        can_delete: boolean;
+    };
 }
