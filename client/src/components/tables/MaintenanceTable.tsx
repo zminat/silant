@@ -1,6 +1,6 @@
 import {FC, useMemo} from 'react';
 import {AgGridReact} from 'ag-grid-react';
-import {AllCommunityModule, ModuleRegistry, themeMaterial} from 'ag-grid-community';
+import {AllCommunityModule, ModuleRegistry, ICellRendererParams, themeMaterial} from 'ag-grid-community';
 import AG_GRID_LOCALE_RU from '../../locale/AG_GRID_LOCALE_RU.ts';
 import {MaintenanceTableProps} from '../../types/machine.types';
 import '../../styles/Main.css';
@@ -10,6 +10,7 @@ import {
     createSimpleColumn,
     createCompanyColumn
 } from "./columnHelpers.tsx";
+import {Link} from "react-router-dom";
 
 ModuleRegistry.registerModules([AllCommunityModule]);
 
@@ -62,12 +63,36 @@ export const MaintenanceTable: FC<MaintenanceTableProps> = ({
     );
 
     const columnDefs = useMemo(() => [
-        createReferenceColumn({
+        {
             headerName: 'Зав. № машины',
             field: 'machineId',
-            options: machineOptions,
-            urlPrefix: '/machines'
-        }),
+            cellEditor: 'agSelectCellEditor',
+            cellEditorParams: {
+                values: machineOptions.map(option => option.value),
+                cellRenderer: (params: any) => {
+                    const model = machineOptions.find(m => m.value === params.value);
+                    return model ? model.label : '';
+                }
+            } as any,
+            valueFormatter: (params) => {
+                if (params.value === undefined || params.value === null) return '';
+                const option = machineOptions.find(opt => opt.value === params.value);
+                return option ? option.label : params.value;
+            },
+            filter: 'agTextColumnFilter',
+            filterValueGetter: params => {
+                const option = machineOptions.find(option => option.value === params.data.machineId);
+                return option ? option.label : '';
+            },
+            cellRenderer: (params: ICellRendererParams) => {
+                if (!params.data?.machineId) return '';
+                const option = machineOptions.find(option => option.value === params.value);
+                const displayValue = option ? option.label : '';
+                return (
+                    <Link to={`/machines/${displayValue}`}>{displayValue}</Link>
+                );
+            }
+        },
         createReferenceColumn({
             headerName: 'Вид ТО',
             field: 'maintenanceTypeId',

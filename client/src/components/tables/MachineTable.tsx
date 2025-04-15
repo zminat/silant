@@ -1,6 +1,6 @@
 import {FC, useMemo} from 'react';
 import {AgGridReact} from 'ag-grid-react';
-import {AllCommunityModule, ModuleRegistry, themeMaterial} from 'ag-grid-community';
+import {AllCommunityModule, ModuleRegistry, ICellRendererParams, themeMaterial} from 'ag-grid-community';
 import AG_GRID_LOCALE_RU from '../../locale/AG_GRID_LOCALE_RU.ts';
 import {MachineTableProps} from '../../types/machine.types';
 import '../../styles/Main.css';
@@ -10,6 +10,7 @@ import {
     createSimpleColumn,
     createCompanyColumn
 } from "./columnHelpers.tsx";
+import {Link} from "react-router-dom";
 
 ModuleRegistry.registerModules([AllCommunityModule]);
 
@@ -108,7 +109,26 @@ export const MachineTable: FC<MachineTableProps> = ({
             options: modelOptions,
             urlPrefix: '/machine-models'
         }),
-        createSimpleColumn('Зав. № машины', 'serialNumber'),
+        {
+            headerName: 'Зав. № машины',
+            field: 'serialNumber',
+            cellRenderer: (params: ICellRendererParams) => {
+                if (!isAuthenticated)
+                    return params.value;
+                return params.value ? (
+                    <Link to={`/machines/${params.value}`}>{params.value}</Link>
+                ) : '';
+            },
+            onCellValueChanged: (params) => {
+                if (params.node) {
+                    params.api.refreshCells({
+                        rowNodes: [params.node],
+                        columns: ['index'],
+                        force: true
+                    });
+                }
+            }
+        },
         createReferenceColumn({
             headerName: 'Модель двигателя',
             field: 'engineModelId',
@@ -150,7 +170,12 @@ export const MachineTable: FC<MachineTableProps> = ({
             headerName: '№',
             field: 'index',
             width: 60,
-            editable: false
+            editable: false,
+            cellRenderer: (params: ICellRendererParams) => {
+                return params.value && params.data?.serialNumber ? (
+                    <Link to={`/machines/${params.data?.serialNumber}`}>{params.value}</Link>
+                ) : '';
+            }
         },
         ...baseColumnDefs,
         {
@@ -171,7 +196,7 @@ export const MachineTable: FC<MachineTableProps> = ({
             field: 'equipment',
         },
         createCompanyColumn('Сервисная компания', 'serviceCompanyId', serviceCompanyOptions, '/service-companies')
-    ], [baseColumnDefs, clientOptions, serviceCompanyOptions]);
+    ], [isAuthenticated, baseColumnDefs, clientOptions, serviceCompanyOptions]);
 
     const columnDefs = useMemo(() =>
             isAuthenticated ? advancedColumnDefs : baseColumnDefs,

@@ -34,8 +34,8 @@ export const createReferenceColumn = ({headerName, field, options, urlPrefix}: M
         cellEditorParams: {
             values: options.map(option => option.value),
             cellRenderer: (params: any) => {
-                const model = options.find(m => m.value === params.value);
-                return model ? model.label : '';
+                const option = options.find(opt => opt.value === params.value);
+                return option ? option.label : '';
             }
         } as any,
         valueFormatter: (params) => {
