@@ -9,8 +9,8 @@ from .models import Machine, Maintenance, Claim, ServiceCompany, MachineModel, E
     DriveAxleModel, SteeringAxleModel, MaintenanceType, FailureNode, RecoveryMethod
 from .serializers import MaintenanceSerializer, ClaimSerializer, MachineModelSerializer, \
     EngineModelSerializer, TransmissionModelSerializer, DriveAxleModelSerializer, SteeringAxleModelSerializer, \
-    MaintenanceTypeSerializer, FailureNodeSerializer, RecoveryMethodSerializer, MachineListSerializer, UserSerializer, \
-    MachineLimitedListSerializer, ServiceCompanySerializer
+    MaintenanceTypeSerializer, FailureNodeSerializer, RecoveryMethodSerializer, MachineSerializer, UserSerializer, \
+    MachineLimitedSerializer, ServiceCompanySerializer
 
 
 def homepage(request, id=None):
@@ -79,7 +79,6 @@ class CustomDjangoPermission(DjangoModelPermissions):
 
 
 class MachineViewSet(ReadOnlyModelViewSet):
-    serializer_class = MachineListSerializer
 
     @action(detail=False, methods=['get'], permission_classes=[AllowAny])
     def public_info(self, request):
@@ -91,7 +90,7 @@ class MachineViewSet(ReadOnlyModelViewSet):
             )
 
         try:
-            machines = MachineLimitedListSerializer(Machine.objects.filter(serial_number=serial_number), many=True).data
+            machines = MachineLimitedSerializer(Machine.objects.filter(serial_number=serial_number), many=True).data
             dictionaries = {
                 'models': MachineModelSerializer(MachineModel.objects.all(), many=True).data,
                 'engine_models': EngineModelSerializer(EngineModel.objects.all(), many=True).data,
@@ -101,9 +100,9 @@ class MachineViewSet(ReadOnlyModelViewSet):
             }
 
             permissions = {
+                'can_create': request.user.has_perm('machines.add_machine'),
                 'can_edit': request.user.has_perm('machines.change_machine'),
                 'can_delete': request.user.has_perm('machines.delete_machine'),
-                'can_create': request.user.has_perm('machines.add_machine'),
             }
 
             return Response({
@@ -135,7 +134,7 @@ class MachineViewSet(ReadOnlyModelViewSet):
 
     def list(self, request, *args, **kwargs):
         queryset = self.get_queryset()
-        machines = self.get_serializer(queryset, many=True).data
+        machines = MachineSerializer(queryset, many=True).data
 
         dictionaries = {
             'models': MachineModelSerializer(MachineModel.objects.all(), many=True).data,
@@ -148,9 +147,9 @@ class MachineViewSet(ReadOnlyModelViewSet):
         }
 
         permissions = {
+            'can_create': request.user.has_perm('api.add_machine'),
             'can_edit': request.user.has_perm('api.change_machine'),
             'can_delete': request.user.has_perm('api.delete_machine'),
-            'can_create': request.user.has_perm('api.add_machine'),
         }
 
         return Response({
@@ -183,6 +182,28 @@ class MaintenanceViewSet(ReadOnlyModelViewSet):
             return Maintenance.objects.filter(machine__service_company=service_company)
 
         return Maintenance.objects.filter(machine__client=user)
+
+    def list(self, request, *args, **kwargs):
+        queryset = self.get_queryset()
+        maintenances = self.get_serializer(queryset, many=True).data
+
+        dictionaries = {
+            'machines': MachineLimitedSerializer(Machine.objects.all(), many=True).data,
+            'maintenance_types': MaintenanceTypeSerializer(MaintenanceType.objects.all(), many=True).data,
+            'organizations': [{'id': -1, 'name': Maintenance.SELF_SERVICE}] + ServiceCompanySerializer(ServiceCompany.objects.all(), many=True).data,
+        }
+
+        permissions = {
+            'can_create': request.user.has_perm('api.add_maintenance'),
+            'can_edit': request.user.has_perm('api.change_maintenance'),
+            'can_delete': request.user.has_perm('api.delete_maintenance'),
+        }
+
+        return Response({
+            'maintenances': maintenances,
+            'dictionaries': dictionaries,
+            'permissions': permissions
+        })
 
 
 class ClaimViewSet(ReadOnlyModelViewSet):

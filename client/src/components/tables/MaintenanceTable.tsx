@@ -1,20 +1,23 @@
 import {FC, useMemo} from 'react';
-import { AgGridReact } from 'ag-grid-react';
-import { AllCommunityModule, ModuleRegistry, ColDef, ICellRendererParams, CellClickedEvent, themeMaterial } from 'ag-grid-community';
-import { useNavigate } from 'react-router-dom';
+import {AgGridReact} from 'ag-grid-react';
+import {AllCommunityModule, ModuleRegistry, themeMaterial} from 'ag-grid-community';
 import AG_GRID_LOCALE_RU from '../../locale/AG_GRID_LOCALE_RU.ts';
-import { MaintenanceData } from '../../types/machine.types';
+import {MaintenanceTableProps} from '../../types/machine.types';
 import '../../styles/Main.css';
+import {
+    createReferenceColumn,
+    createOptionsFromDictionary,
+    createSimpleColumn,
+    createCompanyColumn
+} from "./columnHelpers.tsx";
 
 ModuleRegistry.registerModules([AllCommunityModule]);
 
-interface MaintenanceTableProps {
-    maintenance: MaintenanceData[];
-}
-
-export const MaintenanceTable: FC<MaintenanceTableProps> = ({ maintenance }) => {
-    const navigate = useNavigate();
-
+export const MaintenanceTable: FC<MaintenanceTableProps> = ({
+                                                                maintenances,
+                                                                dictionaries,
+                                                                permissions,
+                                                            }) => {
     const defaultColDef = useMemo(() => ({
         sortable: true,
         filter: true,
@@ -24,67 +27,59 @@ export const MaintenanceTable: FC<MaintenanceTableProps> = ({ maintenance }) => 
         },
         wrapText: true,
         autoHeight: true,
-    }), []);
+        editable: permissions.can_edit,
+    }), [permissions.can_edit]);
 
-    // Преобразуем данные ТО в формат для AgGrid
     const rowData = useMemo(() => {
-        return maintenance.map((item, index) => ({
-            index: index + 1,
-            serialNumber: item.machine?.serial_number || '',
-            machineWithDescription: !!item.machine?.description,
-            machineId: item.machine?.id,
-            maintenanceType: item.maintenance_type?.name || '',
-            maintenanceTypeWithDescription: !!item.maintenance_type?.description,
-            maintenanceTypeId: item.maintenance_type?.id,
-            maintenanceDate: item.maintenance_date,
-            operatingTime: item.operating_time,
-            orderNumber: item.order_number,
-            orderDate: item.order_date,
-            organization: item.organization
+        return maintenances.map((maintenance) => ({
+            id: maintenance.id,
+            machineId: maintenance.machine_id,
+            maintenanceTypeId: maintenance.maintenance_type_id,
+            maintenanceDate: maintenance.maintenance_date,
+            operatingTime: maintenance.operating_time,
+            orderNumber: maintenance.order_number,
+            orderDate: maintenance.order_date,
+            organizationId: maintenance.organization_id
         }));
-    }, [maintenance]);
+    }, [maintenances]);
 
-    // Определение столбцов для AgGrid
-    const columnDefs = useMemo<ColDef<(typeof rowData)[0]>[]>(() => [
-        { headerName: '№ п/п', field: 'index', width: 80 },
-        {
+    const machineOptions = useMemo(() =>
+            dictionaries.machines.map(item => ({
+                value: item.id,
+                label: item.serial_number
+            })),
+        [dictionaries.machines]
+    );
+
+    const maintenanceTypeOptions = useMemo(() =>
+            createOptionsFromDictionary(dictionaries.maintenance_types),
+        [dictionaries.maintenance_types]
+    );
+
+    const organizationOptions = useMemo(() =>
+            createOptionsFromDictionary(dictionaries.organizations),
+        [dictionaries.organizations]
+    );
+
+    const columnDefs = useMemo(() => [
+        createReferenceColumn({
             headerName: 'Зав. № машины',
-            field: 'serialNumber',
-            cellRenderer: (params: ICellRendererParams<(typeof rowData)[0]>) => {
-                const hasDescription = params.data?.machineWithDescription;
-                return hasDescription ?
-                    <span className="clickable">{params.value}</span> :
-                    params.value;
-            },
-            cellStyle: { cursor: 'pointer' },
-            onCellClicked: (params: CellClickedEvent<(typeof rowData)[0]>) => {
-                if (params.data?.machineWithDescription && params.data.machineId) {
-                    navigate(`/machines/${params.data.machineId}`);
-                }
-            }
-        },
-        {
+            field: 'machineId',
+            options: machineOptions,
+            urlPrefix: '/machines'
+        }),
+        createReferenceColumn({
             headerName: 'Вид ТО',
-            field: 'maintenanceType',
-            cellRenderer: (params: ICellRendererParams<(typeof rowData)[0]>) => {
-                const hasDescription = params.data?.maintenanceTypeWithDescription;
-                return hasDescription ?
-                    <span className="clickable">{params.value}</span> :
-                    params.value;
-            },
-            cellStyle: { cursor: 'pointer' },
-            onCellClicked: (params: CellClickedEvent<(typeof rowData)[0]>) => {
-                if (params.data?.maintenanceTypeWithDescription && params.data.maintenanceTypeId) {
-                    navigate(`/maintenance-types/${params.data.maintenanceTypeId}`);
-                }
-            }
-        },
-        { headerName: 'Дата проведения ТО', field: 'maintenanceDate' },
-        { headerName: 'Наработка, м/час', field: 'operatingTime' },
-        { headerName: '№ заказ-наряда', field: 'orderNumber' },
-        { headerName: 'Дата заказ-наряда', field: 'orderDate' },
-        { headerName: 'Организация, проводившая ТО', field: 'organization' }
-    ], [navigate]);
+            field: 'maintenanceTypeId',
+            options: maintenanceTypeOptions,
+            urlPrefix: '/maintenance-types/'
+        }),
+        createSimpleColumn('Дата проведения ТО', 'maintenanceDate'),
+        createSimpleColumn('Наработка, м/час', 'operatingTime'),
+        createSimpleColumn('№ заказ-наряда', 'orderNumber'),
+        createSimpleColumn('Дата заказ-наряда', 'orderDate'),
+        createCompanyColumn('Организация, проводившая ТО', 'organizationId', organizationOptions, '/service-companies')
+    ], [machineOptions, maintenanceTypeOptions, organizationOptions]);
 
     return (
         <AgGridReact

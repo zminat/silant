@@ -2,14 +2,14 @@ import "../styles/Main.css";
 import { useEffect, useState } from "react";
 import { useAuth } from "./AuthContext";
 import { MachineInfoTabs } from './MachineInfoTabs';
-import {MachineTableProps, MaintenanceData, ClaimsData} from '../types/machine.types';
+import {MachineTableProps, MaintenanceTableProps, ClaimsData} from '../types/machine.types';
 import {MachineTable} from "./tables/MachineTable.tsx";
 
 const Main = () => {
     const { isLoggedIn } = useAuth();
     const [serialNumber, setSerialNumber] = useState<string>('');
     const [machines, setMachines] = useState<MachineTableProps | null>(null);
-    const [maintenanceData, setMaintenanceData] = useState<MaintenanceData[]>([]);
+    const [maintenances, setMaintenances] = useState<MaintenanceTableProps | null>(null);
     const [claimData, setClaimData] = useState<ClaimsData[]>([]);
     const [loading, setLoading] = useState<boolean>(false);
     const [error, setError] = useState<string>('');
@@ -35,7 +35,7 @@ const Main = () => {
                 setError('Ошибка при получении данных');
             }
             const data = await response.json();
-            setMaintenanceData(data);
+            setMaintenances(data);
         } catch (err) {
             console.error('Ошибка при получении данных о ТО:', err);
         }
@@ -58,7 +58,7 @@ const Main = () => {
         setLoading(true);
         setError('');
         setMachines(null);
-        setMaintenanceData([]);
+        setMaintenances(null);
         setClaimData([]);
 
         try {
@@ -78,7 +78,7 @@ const Main = () => {
         setLoading(true);
         setError('');
         setMachines(null);
-        setMaintenanceData([]);
+        setMaintenances(null);
         setClaimData([]);
 
         try {
@@ -123,9 +123,9 @@ const Main = () => {
                         <p>Загрузка данных...</p>
                     ) : error ? (
                         <div className="error-message">{error}</div>
-                    ) : machines && machines.machines.length > 0 ? (
+                    ) : machines && maintenances ? (
                         <div className="table-container">
-                            <MachineInfoTabs machines={machines} maintenance={maintenanceData} claim={claimData}/>
+                            <MachineInfoTabs machines={machines} maintenances={maintenances} claims={claimData}/>
                         </div>
                     ) : (
                         <p>У вас пока нет машин</p>

@@ -19,7 +19,14 @@ export const createOptionsFromDictionary = (items: any[]) =>
         label: item.name
     }));
 
-export const createModelColumn = ({headerName, field, options, urlPrefix}: ModelColumnConfig): ColDef => {
+export const createSimpleColumn = (headerName: string, field: string): ColDef => {
+    return {
+        headerName,
+        field,
+    };
+};
+
+export const createReferenceColumn = ({headerName, field, options, urlPrefix}: ModelColumnConfig): ColDef => {
     return {
         headerName,
         field,
@@ -52,9 +59,43 @@ export const createModelColumn = ({headerName, field, options, urlPrefix}: Model
     };
 };
 
-export const createSerialNumberColumn = (headerName: string, field: string): ColDef => {
+export const createCompanyColumn = (headerName: string, field: string, options: OptionType[], urlPrefix?: string): ColDef => {
+    const fallbackOption = options.find(opt => opt.value === -1);
+
     return {
         headerName,
         field,
+        cellEditor: 'agSelectCellEditor',
+        cellEditorParams: {
+            values: options.map(option => option.value),
+            cellRenderer: (params: any) => {
+                const company = options?.find(c => c.value === params.value);
+                return company ? company.label : (fallbackOption ? fallbackOption.label : '');
+            }
+        },
+        valueFormatter: (params) => {
+            if (params.value === undefined || params.value === null) return '';
+            const option = options?.find(opt => opt.value === params.value);
+            return option ? option.label : (fallbackOption ? fallbackOption.label : params.value);
+        },
+        filter: 'agTextColumnFilter',
+        filterValueGetter: params => {
+            const option = options?.find(option => option.value === params.data[field]);
+            return option ? option.label : (fallbackOption ? fallbackOption.label : '');
+        },
+        cellRenderer: (params: ICellRendererParams) => {
+            if (!params.data || !(field in params.data)) return fallbackOption ? fallbackOption.label : '';
+            const option = options?.find(option => option.value === params.value);
+            if (fallbackOption && (!option || fallbackOption === option)) {
+                return fallbackOption.label;
+            }
+
+            const displayValue = option ? option.label : '';
+            if (urlPrefix && params.data[field]) {
+                return <Link to={`${urlPrefix}/${params.data[field]}`}>{displayValue}</Link>;
+            }
+
+            return displayValue;
+        }
     };
 };

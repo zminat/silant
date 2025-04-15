@@ -30,43 +30,42 @@ export interface MachineTableProps {
         clients?: any[];
     };
     permissions: {
+        can_create: boolean;
         can_edit: boolean;
         can_delete: boolean;
-        can_create: boolean;
     };
     isAuthenticated?: boolean;
 }
 
 export interface MaintenanceData {
     id: number;
-    machine: {
-        id: Number;
-        serial_number: string;
-        name: string;
-        description: string;
-    };
-    maintenance_type: {
-        id: Number;
-        name: string;
-        description: string;
-    };
+    machine_id: number;
+    maintenance_type_id: number;
     maintenance_date: string;
     operating_time: number;
     order_number: string;
     order_date: string;
-    organization: string;
-    service_company?: {
-        id: number;
-        name: string;
-        description: string;
-    };
+    organization_id: string;
 }
 
+export interface MaintenanceTableProps {
+    maintenances: MaintenanceData[];
+    dictionaries: {
+        machines: any[];
+        maintenance_types: any[];
+        organizations: any[];
+    };
+    permissions: {
+        can_create: boolean;
+        can_edit: boolean;
+        can_delete: boolean;
+    };
+}
 
 export interface ClaimsData {
     id: number;
     machine: {
-        id: Number;
+        id: number;
         serial_number: string;
         name: string;
         description: string;
@@ -74,13 +73,13 @@ export interface ClaimsData {
     failure_date: string;
     operating_time: number;
     failure_node: {
-        id: Number;
+        id: number;
         name: string;
         description: string;
     };
     failure_description: string;
     recovery_method: {
-        id: Number;
+        id: number;
         name: string;
         description: string;
     };

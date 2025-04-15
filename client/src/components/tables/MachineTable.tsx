@@ -1,15 +1,14 @@
 import {FC, useMemo} from 'react';
 import {AgGridReact} from 'ag-grid-react';
-import {AllCommunityModule, ModuleRegistry, ColDef, ICellRendererParams, themeMaterial} from 'ag-grid-community';
-import {Link} from 'react-router-dom';
+import {AllCommunityModule, ModuleRegistry, themeMaterial} from 'ag-grid-community';
 import AG_GRID_LOCALE_RU from '../../locale/AG_GRID_LOCALE_RU.ts';
 import {MachineTableProps} from '../../types/machine.types';
 import '../../styles/Main.css';
 import {
-    createModelColumn,
+    createReferenceColumn,
     createOptionsFromDictionary,
-    createSerialNumberColumn,
-    OptionType
+    createSimpleColumn,
+    createCompanyColumn
 } from "./columnHelpers.tsx";
 
 ModuleRegistry.registerModules([AllCommunityModule]);
@@ -103,41 +102,41 @@ export const MachineTable: FC<MachineTableProps> = ({
     );
 
     const baseColumnDefs = useMemo(() => [
-        createModelColumn({
+        createReferenceColumn({
             headerName: 'Модель техники',
             field: 'modelId',
             options: modelOptions,
             urlPrefix: '/machine-models'
         }),
-        createSerialNumberColumn('Зав. № машины', 'serialNumber'),
-        createModelColumn({
+        createSimpleColumn('Зав. № машины', 'serialNumber'),
+        createReferenceColumn({
             headerName: 'Модель двигателя',
             field: 'engineModelId',
             options: engineModelOptions,
             urlPrefix: '/engine-models'
         }),
-        createSerialNumberColumn('Зав. № двигателя', 'engineSerialNumber'),
-        createModelColumn({
+        createSimpleColumn('Зав. № двигателя', 'engineSerialNumber'),
+        createReferenceColumn({
             headerName: 'Модель трансмиссии',
             field: 'transmissionModelId',
             options: transmissionModelOptions,
             urlPrefix: '/transmission-models'
         }),
-        createSerialNumberColumn('Зав. № трансмиссии', 'transmissionSerialNumber'),
-        createModelColumn({
+        createSimpleColumn('Зав. № трансмиссии', 'transmissionSerialNumber'),
+        createReferenceColumn({
             headerName: 'Модель ведущего моста',
             field: 'driveAxleModelId',
             options: driveAxleModelOptions,
             urlPrefix: '/drive-axle-models'
         }),
-        createSerialNumberColumn('Зав. № ведущего моста', 'driveAxleSerialNumber'),
-        createModelColumn({
+        createSimpleColumn('Зав. № ведущего моста', 'driveAxleSerialNumber'),
+        createReferenceColumn({
             headerName: 'Модель управляемого моста',
             field: 'steeringAxleModelId',
             options: steeringAxleModelOptions,
             urlPrefix: '/machine-models'
         }),
-        createSerialNumberColumn('Зав. № управляемого моста', 'steeringAxleSerialNumber'),
+        createSimpleColumn('Зав. № управляемого моста', 'steeringAxleSerialNumber'),
     ], [
         modelOptions,
         engineModelOptions,
@@ -145,42 +144,6 @@ export const MachineTable: FC<MachineTableProps> = ({
         driveAxleModelOptions,
         steeringAxleModelOptions
     ]);
-
-    const createCompanyColumn = (headerName: string, field: string, options: OptionType[], urlPrefix?: string): ColDef => {
-        return {
-            headerName,
-            field,
-            cellEditor: 'agSelectCellEditor',
-            cellEditorParams: {
-                values: options?.map(option => option.value),
-                cellRenderer: (params: any) => {
-                    const company = options?.find(c => c.value === params.value);
-                    return company ? company.label : '';
-                }
-            },
-            valueFormatter: (params) => {
-                if (params.value === undefined || params.value === null) return '';
-                const option = options?.find(opt => opt.value === params.value);
-                return option ? option.label : params.value;
-            },
-            filter: 'agTextColumnFilter',
-            filterValueGetter: params => {
-                const option = options?.find(option => option.value === params.data[field]);
-                return option ? option.label : '';
-            },
-            cellRenderer: (params: ICellRendererParams) => {
-                if (!params.data || !(field in params.data)) return '';
-                const option = options?.find(option => option.value === params.value);
-                const displayValue = option ? option.label : '';
-
-                if (urlPrefix && params.data[field]) {
-                    return <Link to={`${urlPrefix}/${params.data[field]}`}>{displayValue}</Link>;
-                }
-
-                return displayValue;
-            }
-        };
-    };
 
     const advancedColumnDefs = useMemo(() => [
         {

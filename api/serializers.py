@@ -74,54 +74,7 @@ class UserSerializer(serializers.ModelSerializer):
             return obj.username
 
 
-class MaintenanceSerializer(serializers.ModelSerializer):
-    maintenance_type = MaintenanceTypeSerializer(read_only=True)
-    machine = serializers.SerializerMethodField()
-    organization = serializers.SerializerMethodField()
-
-    def get_organization(self, obj):
-        return obj.get_organization_display()
-
-    def get_machine(self, obj):
-        return {"serial_number": obj.machine.serial_number} if obj.machine else None
-
-    class Meta:
-        model = Maintenance
-        fields = '__all__'
-
-
-class ClaimSerializer(serializers.ModelSerializer):
-    machine = serializers.SerializerMethodField()
-    failure_node = FailureNodeSerializer(read_only=True)
-    recovery_method = RecoveryMethodSerializer(read_only=True)
-    service_company = ServiceCompanySerializer(read_only=True)
-    downtime = serializers.IntegerField(read_only=True)  # Автоматически рассчитывается
-
-    def get_machine(self, obj):
-        return {"serial_number": obj.machine.serial_number} if obj.machine else None
-
-    class Meta:
-        model = Claim
-        fields = '__all__'
-
-
 class MachineSerializer(serializers.ModelSerializer):
-    model = MachineModelSerializer(read_only=True)
-    engine_model = EngineModelSerializer(read_only=True)
-    transmission_model = TransmissionModelSerializer(read_only=True)
-    drive_axle_model = DriveAxleModelSerializer(read_only=True)
-    steering_axle_model = SteeringAxleModelSerializer(read_only=True)
-    service_company = ServiceCompanySerializer(read_only=True)
-    client = UserSerializer(read_only=True)
-    maintenances = MaintenanceSerializer(many=True, read_only=True)
-    claims = ClaimSerializer(many=True, read_only=True)
-
-    class Meta:
-        model = Machine
-        fields = '__all__'
-
-
-class MachineListSerializer(serializers.ModelSerializer):
     model_id = serializers.PrimaryKeyRelatedField(source='model', read_only=True)
     engine_model_id = serializers.PrimaryKeyRelatedField(source='engine_model', read_only=True)
     transmission_model_id = serializers.PrimaryKeyRelatedField(source='transmission_model', read_only=True)
@@ -145,7 +98,7 @@ class MachineListSerializer(serializers.ModelSerializer):
         ]
 
 
-class MachineLimitedListSerializer(serializers.ModelSerializer):
+class MachineLimitedSerializer(serializers.ModelSerializer):
     model_id = serializers.PrimaryKeyRelatedField(source='model', read_only=True)
     engine_model_id = serializers.PrimaryKeyRelatedField(source='engine_model', read_only=True)
     transmission_model_id = serializers.PrimaryKeyRelatedField(source='transmission_model', read_only=True)
@@ -162,3 +115,34 @@ class MachineLimitedListSerializer(serializers.ModelSerializer):
             'drive_axle_model_id', 'drive_axle_serial_number',
             'steering_axle_model_id', 'steering_axle_serial_number'
         ]
+
+
+class MaintenanceSerializer(serializers.ModelSerializer):
+    machine_id = serializers.PrimaryKeyRelatedField(source='machine', read_only=True)
+    maintenance_type_id = serializers.PrimaryKeyRelatedField(source='maintenance_type', read_only=True)
+    organization_id = serializers.PrimaryKeyRelatedField(source='organization', read_only=True)
+
+    class Meta:
+        model = Maintenance
+        fields = [
+            'id', 'machine_id',
+            'maintenance_type_id',
+            'maintenance_date', 'operating_time',
+            'order_number', 'order_date',
+            'organization_id'
+        ]
+
+
+class ClaimSerializer(serializers.ModelSerializer):
+    machine = serializers.SerializerMethodField()
+    failure_node = FailureNodeSerializer(read_only=True)
+    recovery_method = RecoveryMethodSerializer(read_only=True)
+    service_company = ServiceCompanySerializer(read_only=True)
+    downtime = serializers.IntegerField(read_only=True)  # Автоматически рассчитывается
+
+    def get_machine(self, obj):
+        return {"serial_number": obj.machine.serial_number} if obj.machine else None
+
+    class Meta:
+        model = Claim
+        fields = '__all__'
