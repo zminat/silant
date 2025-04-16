@@ -5,6 +5,7 @@ import AG_GRID_LOCALE_RU from '../../locale/AG_GRID_LOCALE_RU.ts';
 import {MaintenanceTableProps} from '../../types/machine.types';
 import '../../styles/Main.css';
 import {
+    deleteRows,
     createSerialNumberOptionsFromDictionary,
     createOptionsFromDictionary,
     createSimpleColumn,
@@ -31,7 +32,10 @@ export const MaintenanceTable: FC<MaintenanceTableProps> = ({
         wrapText: true,
         autoHeight: true,
         editable: permissions.can_edit,
-    }), [permissions.can_edit]);
+        suppressKeyboardEvent: deleteRows(
+            '/api/maintenances',
+            permissions.can_delete)
+    }), [permissions]);
 
     const rowData = useMemo(() => {
         return maintenances.map((maintenance) => ({
@@ -91,6 +95,7 @@ export const MaintenanceTable: FC<MaintenanceTableProps> = ({
             domLayout='autoHeight'
             rowHeight={40}
             headerHeight={40}
+            rowSelection='multiple'
         />
     );
 };

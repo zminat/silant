@@ -5,6 +5,7 @@ import AG_GRID_LOCALE_RU from '../../locale/AG_GRID_LOCALE_RU.ts';
 import {MachineTableProps} from '../../types/machine.types';
 import '../../styles/Main.css';
 import {
+    deleteRows,
     createOptionsFromDictionary,
     createSimpleColumn,
     createDateColumn,
@@ -31,10 +32,13 @@ export const MachineTable: FC<MachineTableProps> = ({
         wrapText: true,
         autoHeight: true,
         editable: permissions.can_edit,
-    }), [permissions.can_edit]);
+        suppressKeyboardEvent: deleteRows(
+            '/api/machines',
+            permissions.can_delete)
+    }), [permissions]);
 
     const rowData = useMemo(() => {
-        return machines.map((machine, index) => {
+        return machines.map((machine) => {
             const data = {
                 modelId: machine.model_id,
                 serialNumber: machine.serial_number,
@@ -50,7 +54,6 @@ export const MachineTable: FC<MachineTableProps> = ({
 
             if (isAuthenticated) {
                 return {
-                    index: index + 1,
                     id: machine.id,
                     ...data,
                     shipmentDate: machine.shipment_date,
@@ -169,13 +172,13 @@ export const MachineTable: FC<MachineTableProps> = ({
     const advancedColumnDefs = useMemo(() => [
         {
             headerName: '№',
-            field: 'index',
             width: 60,
             editable: false,
             cellRenderer: (params: ICellRendererParams) => {
+                const value = params?.node?.rowIndex !== null ? params.node.rowIndex + 1 : params.value;
                 return params.value && params.data?.serialNumber ? (
-                    <Link to={`/machines/${params.data?.serialNumber}`}>{params.value}</Link>
-                ) : '';
+                    <Link to={`/machines/${params.data?.serialNumber}`}>{value}</Link>
+                ) : value;
             }
         },
         ...baseColumnDefs,
@@ -211,6 +214,7 @@ export const MachineTable: FC<MachineTableProps> = ({
             domLayout='autoHeight'
             rowHeight={40}
             headerHeight={40}
+            rowSelection='multiple'
         />
     );
 };

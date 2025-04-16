@@ -5,6 +5,7 @@ import AG_GRID_LOCALE_RU from '../../locale/AG_GRID_LOCALE_RU.ts';
 import {ClaimTableProps} from '../../types/machine.types';
 import '../../styles/Main.css';
 import {
+    deleteRows,
     createSerialNumberOptionsFromDictionary,
     createOptionsFromDictionary,
     createSimpleColumn,
@@ -30,11 +31,14 @@ export const ClaimTable: FC<ClaimTableProps> = ({
         wrapText: true,
         autoHeight: true,
         editable: permissions.can_edit,
-    }), [permissions.can_edit]);
+        suppressKeyboardEvent: deleteRows(
+            '/api/claims',
+            permissions.can_delete)
+    }), [permissions]);
 
     const rowData = useMemo(() => {
-        return claims.map((claim, index) => ({
-            index: index + 1,
+        return claims.map((claim) => ({
+            id: claim.id,
             machineId: claim.machine_id,
             failureDate: claim.failure_date,
             operatingTime: claim.operating_time,
@@ -111,6 +115,7 @@ export const ClaimTable: FC<ClaimTableProps> = ({
             domLayout='autoHeight'
             rowHeight={40}
             headerHeight={40}
+            rowSelection='multiple'
         />
     );
 };

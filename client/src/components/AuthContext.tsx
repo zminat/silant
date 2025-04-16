@@ -1,8 +1,10 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from "react";
+import {getCookie} from "../utils/utils.ts";
 
 interface AuthContextType {
     isLoggedIn: boolean;
     setIsLoggedIn: (value: boolean) => void;
+    getCookie: (name:string) => string,
     login: (formData: FormData) => Promise<{success: boolean, error?: string}>;
     checkAuthStatus: () => Promise<boolean>;
     logout: () => Promise<void>;
@@ -12,22 +14,6 @@ const AuthContext = createContext<AuthContextType | null>(null);
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
     const [isLoggedIn, setIsLoggedIn] = useState(false);
-
-    const getCookie = (name:string):string => {
-        let cookieValue = '';
-        if (document.cookie && document.cookie !== '') {
-            const cookies = document.cookie.split(';');
-            for (let i = 0; i < cookies.length; i++) {
-                const cookie = cookies[i].trim();
-                if (cookie.startsWith(`${name}=`)) {
-                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-                    break;
-                }
-            }
-        }
-
-        return cookieValue;
-    }
 
     const login = async (formData: FormData): Promise<{success: boolean, error?: string}> => {
         try {
@@ -108,6 +94,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         <AuthContext.Provider value={{
             isLoggedIn,
             setIsLoggedIn,
+            getCookie,
             login,
             checkAuthStatus,
             logout

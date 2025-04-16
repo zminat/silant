@@ -5,7 +5,7 @@ from rest_framework import status
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated, DjangoModelPermissions, AllowAny
 from rest_framework.response import Response
-from rest_framework.viewsets import ReadOnlyModelViewSet
+from rest_framework.viewsets import ReadOnlyModelViewSet, ModelViewSet
 from .models import Machine, Maintenance, Claim, ServiceCompany, MachineModel, EngineModel, TransmissionModel, \
     DriveAxleModel, SteeringAxleModel, MaintenanceType, FailureNode, RecoveryMethod
 from .serializers import MaintenanceSerializer, ClaimSerializer, MachineModelSerializer, \
@@ -79,7 +79,7 @@ class CustomDjangoPermission(DjangoModelPermissions):
     }
 
 
-class MachineViewSet(ReadOnlyModelViewSet):
+class MachineViewSet(ModelViewSet):
 
     @action(detail=False, methods=['get'], permission_classes=[AllowAny])
     def public_info(self, request):
@@ -176,7 +176,7 @@ class MachineViewSet(ReadOnlyModelViewSet):
         return [IsAuthenticated(), CustomDjangoPermission()]
 
 
-class MaintenanceViewSet(ReadOnlyModelViewSet):
+class MaintenanceViewSet(ModelViewSet):
     serializer_class = MaintenanceSerializer
     permission_classes = [IsAuthenticated, CustomDjangoPermission]
 
@@ -220,7 +220,7 @@ class MaintenanceViewSet(ReadOnlyModelViewSet):
         })
 
 
-class ClaimViewSet(ReadOnlyModelViewSet):
+class ClaimViewSet(ModelViewSet):
     serializer_class = ClaimSerializer
     permission_classes = [IsAuthenticated, CustomDjangoPermission]
 

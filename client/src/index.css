@@ -104,7 +104,6 @@ table th, .ag-header-cell {
   background: var(--blue);
   color: white;
   border: none;
-  border-bottom: 5px solid var(--blue);
 }
 
 table td, .ag-cell {
@@ -112,8 +111,6 @@ table td, .ag-cell {
   font-size: 16px;
   padding: 5px;
   border: none;
-  background: white;
-  border-bottom: 5px solid white;
 }
 
 .ag-header-cell-text {

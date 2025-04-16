@@ -1,5 +1,6 @@
-import { ColDef, ICellRendererParams } from 'ag-grid-community';
-import { Link } from 'react-router-dom';
+import {ColDef, ICellRendererParams, SuppressKeyboardEventParams} from 'ag-grid-community';
+import {Link} from 'react-router-dom';
+import {getCookie} from "../../utils/utils.ts";
 
 export type OptionType = {
     value: string | number;
@@ -156,5 +157,61 @@ export const createCompanyColumn = (headerName: string, field: string, options: 
 
             return displayValue;
         }
+    };
+};
+
+export const deleteRows = (
+    baseUrl: string,
+    canDelete: boolean,
+    confirmMessage: string = "Вы уверены, что хотите удалить выбранные записи?"
+): (params: SuppressKeyboardEventParams) => boolean => {
+    return (params: SuppressKeyboardEventParams): boolean => {
+        if (params.event.key !== "Delete" || !params.event.shiftKey || !canDelete) {
+            return false;
+        }
+
+        const api = params.api;
+        const selectedNodes = api.getSelectedNodes();
+
+        if (!selectedNodes || selectedNodes.length === 0) {
+            return true;
+        }
+
+        const selectedIds = selectedNodes.map(node => node.data.id);
+
+        if (!window.confirm(confirmMessage)) {
+            return true;
+        }
+
+        selectedIds.forEach(id => {
+            const deleteUrl = `${baseUrl}/${id}/`;
+
+            fetch(deleteUrl, {
+                method: 'DELETE',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCookie('csrftoken') || '',
+                },
+                credentials: 'include',
+            })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`Ошибка удаления записи с ID ${id}: ${response.status}`);
+                    }
+
+                    api.applyTransaction({
+                        remove: selectedNodes.map(node => node.data)
+                    });
+
+                    api.deselectAll();
+                    api.refreshCells()
+
+                })
+                .catch(error => {
+                    console.error('Ошибка удаления:', error);
+                });
+        });
+
+        return true;
     };
 };
