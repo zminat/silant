@@ -9,7 +9,7 @@ import {
     createOptionsFromDictionary,
     createSimpleColumn,
     createCompanyColumn
-} from "./columnHelpers.tsx";
+} from "./Helpers.tsx";
 import {Link} from "react-router-dom";
 
 ModuleRegistry.registerModules([AllCommunityModule]);

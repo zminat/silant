@@ -10,7 +10,7 @@ import {
     createSerialNumberColumn,
     createSerialNumberOptionsFromDictionary,
     createSimpleColumn
-} from "./columnHelpers.tsx";
+} from "./Helpers.tsx";
 
 ModuleRegistry.registerModules([AllCommunityModule]);
 

@@ -11,7 +11,7 @@ import {
     createReferenceColumn,
     createSimpleColumn,
     createCompanyColumn
-} from "./columnHelpers.tsx";
+} from "./Helpers.tsx";
 
 ModuleRegistry.registerModules([AllCommunityModule]);
 
