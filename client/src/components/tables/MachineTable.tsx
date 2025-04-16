@@ -122,15 +122,6 @@ export const MachineTable: FC<MachineTableProps> = ({
                 return params.value ? (
                     <Link to={`/machines/${params.value}`}>{params.value}</Link>
                 ) : '';
-            },
-            onCellValueChanged: (params) => {
-                if (params.node) {
-                    params.api.refreshCells({
-                        rowNodes: [params.node],
-                        columns: ['index'],
-                        force: true
-                    });
-                }
             }
         },
         createReferenceColumn({
@@ -176,7 +167,7 @@ export const MachineTable: FC<MachineTableProps> = ({
             editable: false,
             cellRenderer: (params: ICellRendererParams) => {
                 const value = params?.node?.rowIndex !== null ? params.node.rowIndex + 1 : params.value;
-                return params.value && params.data?.serialNumber ? (
+                return params.data?.serialNumber ? (
                     <Link to={`/machines/${params.data?.serialNumber}`}>{value}</Link>
                 ) : value;
             }
