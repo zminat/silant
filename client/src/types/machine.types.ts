@@ -1,3 +1,14 @@
+interface dictionary {
+    id: number;
+    name: string;
+}
+
+interface permissions {
+    can_create: boolean;
+    can_edit: boolean;
+    can_delete: boolean;
+}
+
 export interface MachineData {
     id?: number;
     model_id: number;
@@ -21,19 +32,15 @@ export interface MachineData {
 export interface MachineTableProps {
     machines: MachineData[];
     dictionaries: {
-        models: any[];
-        engine_models: any[];
-        transmission_models: any[];
-        drive_axle_models: any[];
-        steering_axle_models: any[];
-        service_companies?: any[];
-        clients?: any[];
+        models: dictionary[];
+        engine_models: dictionary[];
+        transmission_models: dictionary[];
+        drive_axle_models: dictionary[];
+        steering_axle_models: dictionary[];
+        service_companies?: dictionary[];
+        clients?: dictionary[];
     };
-    permissions: {
-        can_create: boolean;
-        can_edit: boolean;
-        can_delete: boolean;
-    };
+    permissions: permissions;
     isAuthenticated?: boolean;
 }
 
@@ -51,15 +58,11 @@ export interface MaintenanceData {
 export interface MaintenanceTableProps {
     maintenances: MaintenanceData[];
     dictionaries: {
-        machines: any[];
-        maintenance_types: any[];
-        organizations: any[];
+        machines: dictionary[];
+        maintenance_types: dictionary[];
+        organizations: dictionary[];
     };
-    permissions: {
-        can_create: boolean;
-        can_edit: boolean;
-        can_delete: boolean;
-    };
+    permissions: permissions;
 }
 
 export interface ClaimData {
@@ -78,13 +81,9 @@ export interface ClaimData {
 export interface ClaimTableProps {
     claims: ClaimData[];
     dictionaries: {
-        machines: any[];
-        failure_nodes: any[];
-        recovery_methods: any[];
+        machines: dictionary[];
+        failure_nodes: dictionary[];
+        recovery_methods: dictionary[];
     };
-    permissions: {
-        can_create: boolean;
-        can_edit: boolean;
-        can_delete: boolean;
-    };
+    permissions: permissions;
 }
