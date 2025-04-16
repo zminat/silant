@@ -91,7 +91,7 @@ class MachineViewSet(ReadOnlyModelViewSet):
             )
 
         try:
-            machines = MachineLimitedSerializer(Machine.objects.filter(serial_number=serial_number), many=True).data
+            machines = MachineLimitedSerializer(Machine.objects.filter(serial_number=serial_number).order_by('shipment_date'), many=True).data
             dictionaries = {
                 'models': MachineModelSerializer(MachineModel.objects.all().order_by('name'), many=True).data,
                 'engine_models': EngineModelSerializer(EngineModel.objects.all().order_by('name'), many=True).data,
@@ -128,13 +128,13 @@ class MachineViewSet(ReadOnlyModelViewSet):
             return Machine.objects.none()
 
         if user.is_staff:
-            return Machine.objects.all()
+            return Machine.objects.all().order_by('shipment_date')
 
         service_company = ServiceCompany.objects.filter(service_manager=user).first()
         if service_company:
-            return Machine.objects.filter(service_company=service_company)
+            return Machine.objects.filter(service_company=service_company).order_by('shipment_date')
 
-        return Machine.objects.filter(client=user)
+        return Machine.objects.filter(client=user).order_by('shipment_date')
 
     def list(self, request, *args, **kwargs):
         queryset = self.get_queryset()
@@ -187,13 +187,13 @@ class MaintenanceViewSet(ReadOnlyModelViewSet):
             return Maintenance.objects.none()
 
         if user.is_staff:
-            return Maintenance.objects.all()
+            return Maintenance.objects.all().order_by('maintenance_date')
 
         service_company = ServiceCompany.objects.filter(service_manager=user).first()
         if service_company:
-            return Maintenance.objects.filter(machine__service_company=service_company)
+            return Maintenance.objects.filter(machine__service_company=service_company).order_by('maintenance_date')
 
-        return Maintenance.objects.filter(machine__client=user)
+        return Maintenance.objects.filter(machine__client=user).order_by('maintenance_date')
 
     def list(self, request, *args, **kwargs):
         queryset = self.get_queryset()
@@ -231,13 +231,13 @@ class ClaimViewSet(ReadOnlyModelViewSet):
             return Claim.objects.none()
 
         if user.is_staff:
-            return Claim.objects.all()
+            return Claim.objects.all().order_by('failure_date')
 
         service_company = ServiceCompany.objects.filter(service_manager=user).first()
         if service_company:
-            return Claim.objects.filter(machine__service_company=service_company)
+            return Claim.objects.filter(machine__service_company=service_company).order_by('failure_date')
 
-        return Claim.objects.filter(machine__client=user)
+        return Claim.objects.filter(machine__client=user).order_by('failure_date')
 
     def list(self, request, *args, **kwargs):
         queryset = self.get_queryset()
