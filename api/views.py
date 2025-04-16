@@ -1,3 +1,4 @@
+from django.db.models import Case, When, Value, IntegerField
 from django.contrib.auth.models import User
 from django.shortcuts import render
 from rest_framework import status
@@ -92,11 +93,14 @@ class MachineViewSet(ReadOnlyModelViewSet):
         try:
             machines = MachineLimitedSerializer(Machine.objects.filter(serial_number=serial_number), many=True).data
             dictionaries = {
-                'models': MachineModelSerializer(MachineModel.objects.all(), many=True).data,
-                'engine_models': EngineModelSerializer(EngineModel.objects.all(), many=True).data,
-                'transmission_models': TransmissionModelSerializer(TransmissionModel.objects.all(), many=True).data,
-                'drive_axle_models': DriveAxleModelSerializer(DriveAxleModel.objects.all(), many=True).data,
-                'steering_axle_models': SteeringAxleModelSerializer(SteeringAxleModel.objects.all(), many=True).data,
+                'models': MachineModelSerializer(MachineModel.objects.all().order_by('name'), many=True).data,
+                'engine_models': EngineModelSerializer(EngineModel.objects.all().order_by('name'), many=True).data,
+                'transmission_models': TransmissionModelSerializer(TransmissionModel.objects.all().order_by('name'),
+                                                                   many=True).data,
+                'drive_axle_models': DriveAxleModelSerializer(DriveAxleModel.objects.all().order_by('name'),
+                                                              many=True).data,
+                'steering_axle_models': SteeringAxleModelSerializer(SteeringAxleModel.objects.all().order_by('name'),
+                                                                    many=True).data,
             }
 
             permissions = {
@@ -137,13 +141,21 @@ class MachineViewSet(ReadOnlyModelViewSet):
         machines = MachineSerializer(queryset, many=True).data
 
         dictionaries = {
-            'models': MachineModelSerializer(MachineModel.objects.all(), many=True).data,
-            'engine_models': EngineModelSerializer(EngineModel.objects.all(), many=True).data,
-            'transmission_models': TransmissionModelSerializer(TransmissionModel.objects.all(), many=True).data,
-            'drive_axle_models': DriveAxleModelSerializer(DriveAxleModel.objects.all(), many=True).data,
-            'steering_axle_models': SteeringAxleModelSerializer(SteeringAxleModel.objects.all(), many=True).data,
-            'service_companies': ServiceCompanySerializer(ServiceCompany.objects.all(), many=True).data,
-            'clients': UserSerializer(User.objects.all(), many=True).data,
+            'models': MachineModelSerializer(MachineModel.objects.all().order_by('name'), many=True).data,
+            'engine_models': EngineModelSerializer(EngineModel.objects.all().order_by('name'), many=True).data,
+            'transmission_models': TransmissionModelSerializer(TransmissionModel.objects.all().order_by('name'),
+                                                               many=True).data,
+            'drive_axle_models': DriveAxleModelSerializer(DriveAxleModel.objects.all().order_by('name'),
+                                                          many=True).data,
+            'steering_axle_models': SteeringAxleModelSerializer(SteeringAxleModel.objects.all().order_by('name'),
+                                                                many=True).data,
+            'service_companies': ServiceCompanySerializer(ServiceCompany.objects.all().order_by('name'),
+                                                          many=True).data,
+            'clients': UserSerializer(User.objects.annotate(
+                first_name_null=Case(When(first_name='', then=Value(1)), When(first_name__isnull=True, then=Value(1)),
+                                     default=Value(0), output_field=IntegerField())).order_by('first_name_null',
+                                                                                              'first_name', 'username'),
+                                      many=True).data,
         }
 
         permissions = {
@@ -189,9 +201,10 @@ class MaintenanceViewSet(ReadOnlyModelViewSet):
 
         dictionaries = {
             'machines': MachineLimitedSerializer(Machine.objects.all().order_by('serial_number'), many=True).data,
-            'maintenance_types': MaintenanceTypeSerializer(MaintenanceType.objects.all(), many=True).data,
+            'maintenance_types': MaintenanceTypeSerializer(MaintenanceType.objects.all().order_by('name'),
+                                                           many=True).data,
             'organizations': [{'id': -1, 'name': Maintenance.SELF_SERVICE}] + ServiceCompanySerializer(
-                ServiceCompany.objects.all(), many=True).data,
+                ServiceCompany.objects.all().order_by('name'), many=True).data,
         }
 
         permissions = {
@@ -232,8 +245,8 @@ class ClaimViewSet(ReadOnlyModelViewSet):
 
         dictionaries = {
             'machines': MachineLimitedSerializer(Machine.objects.all().order_by('serial_number'), many=True).data,
-            'failure_nodes': FailureNodeSerializer(FailureNode.objects.all(), many=True).data,
-            'recovery_methods': RecoveryMethodSerializer(RecoveryMethod.objects.all(), many=True).data,
+            'failure_nodes': FailureNodeSerializer(FailureNode.objects.all().order_by('name'), many=True).data,
+            'recovery_methods': RecoveryMethodSerializer(RecoveryMethod.objects.all().order_by('name'), many=True).data,
         }
 
         permissions = {
