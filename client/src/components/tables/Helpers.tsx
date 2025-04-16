@@ -1,4 +1,4 @@
-import {ColDef, ICellRendererParams, SuppressKeyboardEventParams} from 'ag-grid-community';
+import {ColDef, ICellRendererParams, GridApi, SuppressKeyboardEventParams} from 'ag-grid-community';
 import {Link} from 'react-router-dom';
 import {getCookie} from "../../utils/utils.ts";
 
@@ -160,7 +160,32 @@ export const createCompanyColumn = (headerName: string, field: string, options: 
     };
 };
 
-export const deleteRows = (
+export const saveRow = async (baseUrl: string, api: GridApi, data: any, newValue: any, oldValue: any) => {
+    if (oldValue === newValue) return;
+
+    try {
+        const response = await fetch(`${baseUrl}/${data.id}/`, {
+            method: 'PATCH',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCookie('csrftoken') || '',
+            },
+            body: JSON.stringify(data),
+            credentials: 'include'
+        });
+
+        if (!response.ok) {
+            return { success: false, error: `Ошибка при сохранении: ${response.status}` };
+        }
+    } catch (error) {
+        console.error('Ошибка при сохранении данных:', error);
+
+        api.stopEditing();
+        api.undoCellEditing();
+    }
+};
+
+export const deleteSelectedRows = (
     baseUrl: string,
     canDelete: boolean,
     confirmMessage: string = "Вы уверены, что хотите удалить выбранные записи?"

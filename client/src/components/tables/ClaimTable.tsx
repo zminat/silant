@@ -5,13 +5,14 @@ import AG_GRID_LOCALE_RU from '../../locale/AG_GRID_LOCALE_RU.ts';
 import {ClaimTableProps} from '../../types/machine.types';
 import '../../styles/Main.css';
 import {
-    deleteRows,
+    deleteSelectedRows,
     createSerialNumberOptionsFromDictionary,
     createOptionsFromDictionary,
     createSimpleColumn,
     createDateColumn,
     createSerialNumberColumn,
-    createReferenceColumn
+    createReferenceColumn,
+    saveRow
 } from "./Helpers.tsx";
 
 ModuleRegistry.registerModules([AllCommunityModule]);
@@ -31,7 +32,7 @@ export const ClaimTable: FC<ClaimTableProps> = ({
         wrapText: true,
         autoHeight: true,
         editable: permissions.can_edit,
-        suppressKeyboardEvent: deleteRows(
+        suppressKeyboardEvent: deleteSelectedRows(
             '/api/claims',
             permissions.can_delete)
     }), [permissions]);
@@ -47,7 +48,6 @@ export const ClaimTable: FC<ClaimTableProps> = ({
             recoveryMethodId: claim.recovery_method_id,
             sparePartsUsed: claim.spare_parts_used,
             recoveryDate: claim.recovery_date,
-            downtimeDays: claim.downtime
         }));
     }, [claims]);
 
@@ -105,6 +105,24 @@ export const ClaimTable: FC<ClaimTableProps> = ({
         }
     ], [machineOptions, failureNodeOptions, recoveryMethodOptions]);
 
+    const onCellValueChanged = (params: any) => {
+        const {data, newValue, oldValue, api} = params;
+
+        const convertedData = {
+            id: data.id,
+            machine: data.machineId,
+            failure_date: data.failureDate,
+            operating_time: data.operatingTime,
+            failure_node: data.failureNodeId,
+            failure_description: data.failureDescription,
+            recovery_method: data.recoveryMethodId,
+            spare_parts_used: data.sparePartsUsed,
+            recovery_date: data.recoveryDate
+        };
+
+        saveRow('/api/claims', api, convertedData, oldValue, newValue);
+    };
+
     return (
         <AgGridReact
             rowData={rowData}
@@ -116,6 +134,7 @@ export const ClaimTable: FC<ClaimTableProps> = ({
             rowHeight={40}
             headerHeight={40}
             rowSelection='multiple'
+            onCellValueChanged={onCellValueChanged}
         />
     );
 };

@@ -58,6 +58,12 @@ class ServiceCompanySerializer(serializers.ModelSerializer):
         fields = ['id', 'name', 'description']
 
 
+class MachineSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Machine
+        fields = '__all__'
+
+
 class UserSerializer(serializers.ModelSerializer):
     name = serializers.SerializerMethodField()
 
@@ -74,7 +80,7 @@ class UserSerializer(serializers.ModelSerializer):
             return obj.username
 
 
-class MachineSerializer(serializers.ModelSerializer):
+class MachineListSerializer(serializers.ModelSerializer):
     model_id = serializers.PrimaryKeyRelatedField(source='model', read_only=True)
     engine_model_id = serializers.PrimaryKeyRelatedField(source='engine_model', read_only=True)
     transmission_model_id = serializers.PrimaryKeyRelatedField(source='transmission_model', read_only=True)
@@ -98,7 +104,7 @@ class MachineSerializer(serializers.ModelSerializer):
         ]
 
 
-class MachineLimitedSerializer(serializers.ModelSerializer):
+class MachineLimitedListSerializer(serializers.ModelSerializer):
     model_id = serializers.PrimaryKeyRelatedField(source='model', read_only=True)
     engine_model_id = serializers.PrimaryKeyRelatedField(source='engine_model', read_only=True)
     transmission_model_id = serializers.PrimaryKeyRelatedField(source='transmission_model', read_only=True)
@@ -118,6 +124,12 @@ class MachineLimitedSerializer(serializers.ModelSerializer):
 
 
 class MaintenanceSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Maintenance
+        fields = '__all__'
+
+
+class MaintenanceListSerializer(serializers.ModelSerializer):
     machine_id = serializers.PrimaryKeyRelatedField(source='machine', read_only=True)
     maintenance_type_id = serializers.PrimaryKeyRelatedField(source='maintenance_type', read_only=True)
     organization_id = serializers.PrimaryKeyRelatedField(source='organization', read_only=True)
@@ -134,6 +146,12 @@ class MaintenanceSerializer(serializers.ModelSerializer):
 
 
 class ClaimSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Claim
+        fields = '__all__'
+
+
+class ClaimListSerializer(serializers.ModelSerializer):
     machine_id = serializers.PrimaryKeyRelatedField(source='machine', read_only=True)
     failure_node_id = serializers.PrimaryKeyRelatedField(source='failure_node', read_only=True)
     recovery_method_id = serializers.PrimaryKeyRelatedField(source='recovery_method', read_only=True)

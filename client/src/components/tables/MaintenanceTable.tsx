@@ -5,14 +5,15 @@ import AG_GRID_LOCALE_RU from '../../locale/AG_GRID_LOCALE_RU.ts';
 import {MaintenanceTableProps} from '../../types/machine.types';
 import '../../styles/Main.css';
 import {
-    deleteRows,
+    deleteSelectedRows,
     createSerialNumberOptionsFromDictionary,
     createOptionsFromDictionary,
     createSimpleColumn,
     createDateColumn,
     createSerialNumberColumn,
     createReferenceColumn,
-    createCompanyColumn
+    createCompanyColumn,
+    saveRow
 } from "./Helpers.tsx";
 
 ModuleRegistry.registerModules([AllCommunityModule]);
@@ -32,7 +33,7 @@ export const MaintenanceTable: FC<MaintenanceTableProps> = ({
         wrapText: true,
         autoHeight: true,
         editable: permissions.can_edit,
-        suppressKeyboardEvent: deleteRows(
+        suppressKeyboardEvent: deleteSelectedRows(
             '/api/maintenances',
             permissions.can_delete)
     }), [permissions]);
@@ -85,6 +86,23 @@ export const MaintenanceTable: FC<MaintenanceTableProps> = ({
         createCompanyColumn('Организация, проводившая ТО', 'organizationId', organizationOptions, '/service-companies')
     ], [machineOptions, maintenanceTypeOptions, organizationOptions]);
 
+    const onCellValueChanged = (params: any) => {
+        const {data, newValue, oldValue, api} = params;
+
+        const convertedData = {
+            id: data.id,
+            machine: data.machineId,
+            maintenance_type: data.maintenanceTypeId,
+            maintenance_date: data.maintenanceDate,
+            operating_time: data.operatingTime,
+            order_number: data.orderNumber,
+            order_date: data.orderDate,
+            organization: data.organizationId !== -1 ? data.organizationId : null,
+        };
+
+        saveRow('/api/maintenances', api, convertedData, oldValue, newValue);
+    };
+
     return (
         <AgGridReact
             rowData={rowData}
@@ -96,6 +114,7 @@ export const MaintenanceTable: FC<MaintenanceTableProps> = ({
             rowHeight={40}
             headerHeight={40}
             rowSelection='multiple'
+            onCellValueChanged={onCellValueChanged}
         />
     );
 };

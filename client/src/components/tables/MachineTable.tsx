@@ -5,12 +5,13 @@ import AG_GRID_LOCALE_RU from '../../locale/AG_GRID_LOCALE_RU.ts';
 import {MachineTableProps} from '../../types/machine.types';
 import '../../styles/Main.css';
 import {
-    deleteRows,
+    deleteSelectedRows,
     createOptionsFromDictionary,
     createSimpleColumn,
     createDateColumn,
     createReferenceColumn,
-    createCompanyColumn
+    createCompanyColumn,
+    saveRow
 } from "./Helpers.tsx";
 import {Link} from "react-router-dom";
 
@@ -32,7 +33,7 @@ export const MachineTable: FC<MachineTableProps> = ({
         wrapText: true,
         autoHeight: true,
         editable: permissions.can_edit,
-        suppressKeyboardEvent: deleteRows(
+        suppressKeyboardEvent: deleteSelectedRows(
             '/api/machines',
             permissions.can_delete)
     }), [permissions]);
@@ -195,6 +196,32 @@ export const MachineTable: FC<MachineTableProps> = ({
         [isAuthenticated, baseColumnDefs, advancedColumnDefs]
     );
 
+    const onCellValueChanged = (params: any) => {
+        const {data, newValue, oldValue, api} = params;
+
+        const convertedData = {
+            id: data.id,
+            model: data.modelId,
+            serial_number: data.serialNumber,
+            engine_model: data.engineModelId,
+            engine_serial_number: data.engineSerialNumber,
+            transmission_model: data.transmissionModelId,
+            transmission_serial_number: data.transmissionSerialNumber,
+            drive_axle_model: data.driveAxleModelId,
+            drive_axle_serial_number: data.driveAxleSerialNumber,
+            steering_axle_model: data.steeringAxleModelId,
+            steering_axle_serial_number: data.steeringAxleSerialNumber,
+            shipment_date: data.shipmentDate,
+            client: data.clientId,
+            consignee: data.consignee,
+            delivery_address: data.deliveryAddress,
+            equipment: data.equipment,
+            service_company: data.serviceCompanyId,
+        };
+
+        saveRow('/api/machines', api, convertedData, oldValue, newValue);
+    };
+
     return (
         <AgGridReact
             rowData={rowData}
@@ -206,6 +233,7 @@ export const MachineTable: FC<MachineTableProps> = ({
             rowHeight={40}
             headerHeight={40}
             rowSelection='multiple'
+            onCellValueChanged={onCellValueChanged}
         />
     );
 };

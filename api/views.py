@@ -8,10 +8,11 @@ from rest_framework.response import Response
 from rest_framework.viewsets import ReadOnlyModelViewSet, ModelViewSet
 from .models import Machine, Maintenance, Claim, ServiceCompany, MachineModel, EngineModel, TransmissionModel, \
     DriveAxleModel, SteeringAxleModel, MaintenanceType, FailureNode, RecoveryMethod
-from .serializers import MaintenanceSerializer, ClaimSerializer, MachineModelSerializer, \
+from .serializers import MachineSerializer, MachineListSerializer, MachineLimitedListSerializer, MaintenanceSerializer, \
+    MaintenanceListSerializer, ClaimSerializer, ClaimListSerializer, MachineModelSerializer, \
     EngineModelSerializer, TransmissionModelSerializer, DriveAxleModelSerializer, SteeringAxleModelSerializer, \
-    MaintenanceTypeSerializer, FailureNodeSerializer, RecoveryMethodSerializer, MachineSerializer, UserSerializer, \
-    MachineLimitedSerializer, ServiceCompanySerializer
+    MaintenanceTypeSerializer, FailureNodeSerializer, RecoveryMethodSerializer, UserSerializer, \
+    ServiceCompanySerializer
 
 
 def homepage(request, id=None):
@@ -80,6 +81,7 @@ class CustomDjangoPermission(DjangoModelPermissions):
 
 
 class MachineViewSet(ModelViewSet):
+    serializer_class = MachineSerializer
 
     @action(detail=False, methods=['get'], permission_classes=[AllowAny])
     def public_info(self, request):
@@ -91,7 +93,8 @@ class MachineViewSet(ModelViewSet):
             )
 
         try:
-            machines = MachineLimitedSerializer(Machine.objects.filter(serial_number=serial_number).order_by('shipment_date'), many=True).data
+            machines = MachineLimitedListSerializer(
+                Machine.objects.filter(serial_number=serial_number).order_by('shipment_date'), many=True).data
             dictionaries = {
                 'models': MachineModelSerializer(MachineModel.objects.all().order_by('name'), many=True).data,
                 'engine_models': EngineModelSerializer(EngineModel.objects.all().order_by('name'), many=True).data,
@@ -138,7 +141,7 @@ class MachineViewSet(ModelViewSet):
 
     def list(self, request, *args, **kwargs):
         queryset = self.get_queryset()
-        machines = MachineSerializer(queryset, many=True).data
+        machines = MachineListSerializer(queryset, many=True).data
 
         dictionaries = {
             'models': MachineModelSerializer(MachineModel.objects.all().order_by('name'), many=True).data,
@@ -197,10 +200,10 @@ class MaintenanceViewSet(ModelViewSet):
 
     def list(self, request, *args, **kwargs):
         queryset = self.get_queryset()
-        maintenances = self.get_serializer(queryset, many=True).data
+        maintenances = MaintenanceListSerializer(queryset, many=True).data
 
         dictionaries = {
-            'machines': MachineLimitedSerializer(Machine.objects.all().order_by('serial_number'), many=True).data,
+            'machines': MachineLimitedListSerializer(Machine.objects.all().order_by('serial_number'), many=True).data,
             'maintenance_types': MaintenanceTypeSerializer(MaintenanceType.objects.all().order_by('name'),
                                                            many=True).data,
             'organizations': [{'id': None, 'name': Maintenance.SELF_SERVICE}] + ServiceCompanySerializer(
@@ -241,10 +244,10 @@ class ClaimViewSet(ModelViewSet):
 
     def list(self, request, *args, **kwargs):
         queryset = self.get_queryset()
-        claims = self.get_serializer(queryset, many=True).data
+        claims = ClaimListSerializer(queryset, many=True).data
 
         dictionaries = {
-            'machines': MachineLimitedSerializer(Machine.objects.all().order_by('serial_number'), many=True).data,
+            'machines': MachineLimitedListSerializer(Machine.objects.all().order_by('serial_number'), many=True).data,
             'failure_nodes': FailureNodeSerializer(FailureNode.objects.all().order_by('name'), many=True).data,
             'recovery_methods': RecoveryMethodSerializer(RecoveryMethod.objects.all().order_by('name'), many=True).data,
         }
