@@ -5,9 +5,10 @@ import AG_GRID_LOCALE_RU from '../../locale/AG_GRID_LOCALE_RU.ts';
 import {MachineTableProps} from '../../types/machine.types';
 import '../../styles/Main.css';
 import {
-    createReferenceColumn,
     createOptionsFromDictionary,
     createSimpleColumn,
+    createDateColumn,
+    createReferenceColumn,
     createCompanyColumn
 } from "./Helpers.tsx";
 import {Link} from "react-router-dom";
@@ -178,10 +179,7 @@ export const MachineTable: FC<MachineTableProps> = ({
             }
         },
         ...baseColumnDefs,
-        {
-            headerName: 'Дата отгрузки с завода',
-            field: 'shipmentDate',
-        },
+        createDateColumn('Дата отгрузки с завода', 'shipmentDate'),
         createCompanyColumn('Покупатель', 'clientId', clientOptions),
         {
             headerName: 'Грузополучатель (конечный потребитель)',

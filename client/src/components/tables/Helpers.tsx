@@ -32,6 +32,32 @@ export const createSimpleColumn = (headerName: string, field: string): ColDef =>
     };
 };
 
+export const createDateColumn = (headerName: string, field: string) => {
+    return {
+        headerName,
+        field,
+        minWidth: 150,
+        valueFormatter: (params: any) => {
+            if (!params.value) return '';
+
+            try {
+                if (typeof params.value === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(params.value)) {
+                    const [year, month, day] = params.value.split('-').map(Number);
+                    const date = new Date(year, month - 1, day);
+                    return date.toLocaleDateString();
+                }
+
+                const date = new Date(params.value);
+                return date.toLocaleDateString();
+            } catch (e) {
+                console.error('Ошибка при форматировании даты:', e);
+                return params.value;
+            }
+        }
+    };
+};
+
+
 export const createSerialNumberColumn = ({headerName, field, options, urlPrefix}: ModelColumnConfig): ColDef => {
     return {
         headerName,

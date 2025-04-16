@@ -7,9 +7,10 @@ import '../../styles/Main.css';
 import {
     createSerialNumberOptionsFromDictionary,
     createOptionsFromDictionary,
+    createSimpleColumn,
+    createDateColumn,
     createSerialNumberColumn,
     createReferenceColumn,
-    createSimpleColumn,
     createCompanyColumn
 } from "./Helpers.tsx";
 
@@ -73,10 +74,10 @@ export const MaintenanceTable: FC<MaintenanceTableProps> = ({
             options: maintenanceTypeOptions,
             urlPrefix: '/maintenance-types'
         }),
-        createSimpleColumn('Дата проведения ТО', 'maintenanceDate'),
+        createDateColumn('Дата проведения ТО', 'maintenanceDate'),
         createSimpleColumn('Наработка, м/час', 'operatingTime'),
         createSimpleColumn('№ заказ-наряда', 'orderNumber'),
-        createSimpleColumn('Дата заказ-наряда', 'orderDate'),
+        createDateColumn('Дата заказ-наряда', 'orderDate'),
         createCompanyColumn('Организация, проводившая ТО', 'organizationId', organizationOptions, '/service-companies')
     ], [machineOptions, maintenanceTypeOptions, organizationOptions]);
 

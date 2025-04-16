@@ -5,11 +5,12 @@ import AG_GRID_LOCALE_RU from '../../locale/AG_GRID_LOCALE_RU.ts';
 import {ClaimTableProps} from '../../types/machine.types';
 import '../../styles/Main.css';
 import {
-    createOptionsFromDictionary,
-    createReferenceColumn,
-    createSerialNumberColumn,
     createSerialNumberOptionsFromDictionary,
-    createSimpleColumn
+    createOptionsFromDictionary,
+    createSimpleColumn,
+    createDateColumn,
+    createSerialNumberColumn,
+    createReferenceColumn
 } from "./Helpers.tsx";
 
 ModuleRegistry.registerModules([AllCommunityModule]);
@@ -68,7 +69,7 @@ export const ClaimTable: FC<ClaimTableProps> = ({
             options: machineOptions,
             urlPrefix: '/machines'
         }),
-        createSimpleColumn('Дата отказа', 'failureDate'),
+        createDateColumn('Дата отказа', 'failureDate'),
         createSimpleColumn('Наработка, м/час', 'operatingTime'),
         createReferenceColumn({
             headerName: 'Узел отказа',
@@ -84,7 +85,7 @@ export const ClaimTable: FC<ClaimTableProps> = ({
             urlPrefix: '/failure-nodes'
         }),
         createSimpleColumn('Используемые запасные части', 'sparePartsUsed'),
-        createSimpleColumn('Дата восстановления', 'recoveryDate'),
+        createDateColumn('Дата восстановления', 'recoveryDate'),
         {
             headerName: 'Время простоя техники',
             editable: false,
