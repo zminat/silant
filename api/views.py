@@ -188,7 +188,7 @@ class MaintenanceViewSet(ReadOnlyModelViewSet):
         maintenances = self.get_serializer(queryset, many=True).data
 
         dictionaries = {
-            'machines': MachineLimitedSerializer(Machine.objects.all(), many=True).data,
+            'machines': MachineLimitedSerializer(Machine.objects.all().order_by('serial_number'), many=True).data,
             'maintenance_types': MaintenanceTypeSerializer(MaintenanceType.objects.all(), many=True).data,
             'organizations': [{'id': -1, 'name': Maintenance.SELF_SERVICE}] + ServiceCompanySerializer(
                 ServiceCompany.objects.all(), many=True).data,
@@ -231,7 +231,7 @@ class ClaimViewSet(ReadOnlyModelViewSet):
         claims = self.get_serializer(queryset, many=True).data
 
         dictionaries = {
-            'machines': MachineLimitedSerializer(Machine.objects.all(), many=True).data,
+            'machines': MachineLimitedSerializer(Machine.objects.all().order_by('serial_number'), many=True).data,
             'failure_nodes': FailureNodeSerializer(FailureNode.objects.all(), many=True).data,
             'recovery_methods': RecoveryMethodSerializer(RecoveryMethod.objects.all(), many=True).data,
         }
