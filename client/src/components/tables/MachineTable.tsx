@@ -155,7 +155,7 @@ export const MachineTable: FC<MachineTableProps> = ({
             headerName: 'Модель управляемого моста',
             field: 'steeringAxleModelId',
             options: steeringAxleModelOptions,
-            urlPrefix: '/machine-models'
+            urlPrefix: '/steering-axle-models'
         }),
         createSimpleColumn('Зав. № управляемого моста', 'steeringAxleSerialNumber'),
     ], [

@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'react';
-import { useParams } from 'react-router-dom';
+import {useState, useEffect} from 'react';
+import {useParams} from 'react-router-dom';
 
 interface ReferenceItem {
     id: number;
@@ -12,8 +12,8 @@ interface ReferenceDetailProps {
     title: string;
 }
 
-const ReferenceDetail = ({ type, title }: ReferenceDetailProps) => {
-    const { id } = useParams<{ id: string }>();
+const ReferenceDetail = ({type, title}: ReferenceDetailProps) => {
+    const {id} = useParams<{ id: string }>();
     const [item, setItem] = useState<ReferenceItem | null>(null);
     const [loading, setLoading] = useState<boolean>(true);
     const [error, setError] = useState<string | null>(null);
@@ -54,15 +54,7 @@ const ReferenceDetail = ({ type, title }: ReferenceDetailProps) => {
         <div className="reference-detail">
             <h2>{title}: {item.name}</h2>
             <div className="reference-card">
-                <div className="reference-field">
-                    <strong>ID:</strong> {item.id}
-                </div>
-                <div className="reference-field">
-                    <strong>Наименование:</strong> {item.name}
-                </div>
-                <div className="reference-field">
-                    <strong>Описание:</strong> {item.description || 'Отсутствует'}
-                </div>
+                <div className="reference-field">{item.description || 'Описание отсутствует'}</div>
             </div>
         </div>
     );

@@ -82,7 +82,7 @@ export const ClaimTable: FC<ClaimTableProps> = ({
             headerName: 'Способ восстановления',
             field: 'recoveryMethodId',
             options: recoveryMethodOptions,
-            urlPrefix: '/failure-nodes'
+            urlPrefix: '/recovery-methods'
         }),
         createSimpleColumn('Используемые запасные части', 'sparePartsUsed'),
         createDateColumn('Дата восстановления', 'recoveryDate'),
