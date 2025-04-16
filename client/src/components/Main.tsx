@@ -14,14 +14,17 @@ const Main = () => {
     const [loading, setLoading] = useState<boolean>(false);
     const [error, setError] = useState<string>('');
 
-    const fetchMachinesData = async () => {
-        try {
+    const fetchData = async (url: string, errorMessage: string) => {
+        const response = await fetch(url);
+        if (!response.ok) {
+            throw new Error(errorMessage);
+        }
+        return await response.json();
+    };
 
-            const response = await fetch('/api/machines/');
-            if (!response.ok) {
-                setError('Ошибка при получении данных');
-            }
-            const data = await response.json();
+    const fetchMachineData = async () => {
+        try {
+            const data = await fetchData('/api/machines/', 'Ошибка при получении данных о машинах');
             setMachines(data);
         } catch (err) {
             console.error('Ошибка при получении данных о машинах:', err);
@@ -30,56 +33,53 @@ const Main = () => {
 
     const fetchMaintenanceData = async () => {
         try {
-            const response = await fetch('/api/maintenances/');
-            if (!response.ok) {
-                setError('Ошибка при получении данных');
-            }
-            const data = await response.json();
+            const data = await fetchData('/api/maintenances/', 'Ошибка при получении данных о ТО');
             setMaintenances(data);
         } catch (err) {
             console.error('Ошибка при получении данных о ТО:', err);
         }
     };
 
-    const fetchClaimsData = async () => {
+    const fetchClaimData = async () => {
         try {
-            const response = await fetch('/api/claims/');
-            if (!response.ok) {
-                setError('Ошибка при получении данных');
-            }
-            const data = await response.json();
+            const data = await fetchData('/api/claims/', 'Ошибка при получении данных о рекламациях');
             setClaims(data);
         } catch (err) {
             console.error('Ошибка при получении данных о рекламациях:', err);
         }
     };
 
-    const handleLoading = async() => {
+    const resetStates = () => {
         setLoading(true);
         setError('');
         setMachines(null);
         setMaintenances(null);
         setClaims(null);
+    };
+
+    // Общая функция для обработки ошибок
+    const handleError = (err: unknown) => {
+        setError(err instanceof Error ? err.message : 'Произошла ошибка');
+    };
+
+    const handleLoading = async() => {
+        resetStates();
 
         try {
             if (isLoggedIn) {
-                await fetchMachinesData();
+                await fetchMachineData();
                 await fetchMaintenanceData();
-                await fetchClaimsData();
+                await fetchClaimData();
             }
         } catch (err) {
-            setError(err instanceof Error ? err.message : 'Произошла ошибка');
+            handleError(err);
         } finally {
             setLoading(false);
         }
     }
 
     const handleSearch = async () => {
-        setLoading(true);
-        setError('');
-        setMachines(null);
-        setMaintenances(null);
-        setClaims(null);
+        resetStates();
 
         try {
             if (!isLoggedIn) {
@@ -88,17 +88,20 @@ const Main = () => {
                     return;
                 }
 
-                const response = await fetch(`/api/machines/public_info/?serial_number=${serialNumber}`);
-                if (!response.ok) {
+                const data = await fetchData(
+                    `/api/machines/public_info/?serial_number=${serialNumber}`,
+                    'Машина не найдена'
+                );
+
+                if (!data.machines.length) {
                     setError('Машина не найдена');
                     return;
                 }
 
-                const data = await response.json();
                 setMachines(data);
             }
         } catch (err) {
-            setError(err instanceof Error ? err.message : 'Произошла ошибка');
+            handleError(err);
         } finally {
             setLoading(false);
         }
@@ -116,22 +119,7 @@ const Main = () => {
 
     return (
         <div className="page-container">
-            {isLoggedIn ? (
-                <div className="result-container">
-                    <h2>Информация о комплектации и технических характеристиках Вашей техники</h2>
-                    {loading ? (
-                        <p>Загрузка данных...</p>
-                    ) : error ? (
-                        <div className="error-message">{error}</div>
-                    ) : machines && maintenances && claims ? (
-                        <div className="table-container">
-                            <MachineInfoTabs machines={machines} maintenances={maintenances} claims={claims}/>
-                        </div>
-                    ) : (
-                        <p>У вас пока нет машин</p>
-                    )}
-                </div>
-            ) : (
+            {!isLoggedIn && (
                 <>
                     <h1>Проверьте комплектацию и технические характеристики техники Силант</h1>
                     <div className="wrapper-form">
@@ -156,26 +144,41 @@ const Main = () => {
                             {loading ? "Поиск..." : "Поиск"}
                         </button>
                     </div>
-
-                    {loading && (
-                        <p>Загрузка данных...</p>
-                    )}
-
-                    {!loading && error && (
-                        <div className="error-message">
-                            {error}
-                        </div>
-                    )}
-
-                    {!loading && machines && (
-                        <div className="result-container">
-                            <h3>Результаты поиска:</h3>
-                            <div className="table-container">
-                                <MachineTable machines={machines.machines} dictionaries={machines.dictionaries} permissions={machines.permissions} isAuthenticated={false} />
-                            </div>
-                        </div>
-                    )}
                 </>
+            )}
+
+            {loading && <p>Загрузка данных...</p>}
+            {!loading && error && <div className="error-message">{error}</div>}
+
+            {(isLoggedIn || machines) && !loading && (
+                <div className="result-container">
+                    {isLoggedIn && <h2>Информация о комплектации и технических характеристиках Вашей техники</h2>}
+
+                    {!isLoggedIn && !error && machines && <h3>Результаты поиска:</h3>}
+
+                    {!error && isLoggedIn && !(machines && maintenances && claims) && <p>У вас пока нет машин</p>}
+
+                    {!error && (
+                        <div className="table-container">
+                            {isLoggedIn && machines && maintenances && claims && (
+                                <MachineInfoTabs
+                                    machines={machines}
+                                    maintenances={maintenances}
+                                    claims={claims}
+                                />
+                            )}
+
+                            {!isLoggedIn && machines && (
+                                <MachineTable
+                                    machines={machines.machines}
+                                    dictionaries={machines.dictionaries}
+                                    permissions={machines.permissions}
+                                    isAuthenticated={false}
+                                />
+                            )}
+                        </div>
+                    )}
+                </div>
             )}
         </div>
     );
