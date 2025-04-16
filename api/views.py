@@ -203,7 +203,7 @@ class MaintenanceViewSet(ReadOnlyModelViewSet):
             'machines': MachineLimitedSerializer(Machine.objects.all().order_by('serial_number'), many=True).data,
             'maintenance_types': MaintenanceTypeSerializer(MaintenanceType.objects.all().order_by('name'),
                                                            many=True).data,
-            'organizations': [{'id': -1, 'name': Maintenance.SELF_SERVICE}] + ServiceCompanySerializer(
+            'organizations': [{'id': None, 'name': Maintenance.SELF_SERVICE}] + ServiceCompanySerializer(
                 ServiceCompany.objects.all().order_by('name'), many=True).data,
         }
 

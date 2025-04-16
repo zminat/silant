@@ -42,7 +42,7 @@ export const MaintenanceTable: FC<MaintenanceTableProps> = ({
             operatingTime: maintenance.operating_time,
             orderNumber: maintenance.order_number,
             orderDate: maintenance.order_date,
-            organizationId: maintenance.organization_id
+            organizationId: maintenance.organization_id ?? -1
         }));
     }, [maintenances]);
 
