@@ -199,9 +199,11 @@ export const MachineTable: FC<MachineTableProps> = ({
 
     const advancedColumnDefs = useMemo(() => [
         {
-            headerName: '№',
-            width: 70,
+            headerName: '№ п/п',
+            width: 80,
             editable: false,
+            sortable: false,
+            filter: false,
             cellRenderer: (params: ICellRendererParams) => {
                 if (params.data?.id === -2) {
                     return null;
