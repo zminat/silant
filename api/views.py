@@ -26,23 +26,17 @@ def user_info(request):
 
     if user.is_staff:
         user_type = 'manager'
-        organization_name = 'Администратор'
         return Response({
             'username': user.username,
             'userType': user_type,
-            'organizationName': organization_name
+            'organizationName': user.first_name or user.username
         })
 
     service_company = ServiceCompany.objects.filter(service_manager=user).first()
 
-    is_service_user = ServiceCompany.objects.filter(users__id=user.id).exists()
-
     if service_company:
         user_type = 'service_company'
         organization_name = service_company.name
-    elif is_service_user:
-        user_type = 'service_company'
-        organization_name = ServiceCompany.objects.filter(users__id=user.id).first().name
     else:
         user_type = 'client'
         organization_name = user.first_name or user.username

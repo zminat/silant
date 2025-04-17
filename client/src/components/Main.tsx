@@ -163,8 +163,8 @@ const Main = () => {
                                         {userInfo.userType === 'service_company'
                                             ? `Сервисная компания: ${userInfo.organizationName}`
                                             : userInfo.userType === 'manager'
-                                                ? `Менеджер: ${userInfo.username}`
-                                                : `Клиент: ${userInfo.username}`
+                                                ? `Менеджер: ${userInfo.organizationName}`
+                                                : `Клиент: ${userInfo.organizationName}`
                                         }
                                     </h1>
                                 )}
