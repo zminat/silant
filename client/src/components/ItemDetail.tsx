@@ -1,3 +1,4 @@
+import '../styles/ItemDetail.css';
 import {useState, useEffect, useCallback} from 'react';
 import {useParams} from 'react-router-dom';
 import {useLoadingError} from './context/LoadingErrorContext';
@@ -44,11 +45,11 @@ const ItemDetail = ({type, title}: ReferenceDetailProps) => {
     return (
         <>
             <LoadingErrorDisplay/>
-            {!loading && !error && item && (<div className="reference-detail">
+            {!loading && !error && item && (<div className="item-detail">
 
                     <h2>{title}: {item.name}</h2>
-                    <div className="reference-card">
-                        <div className="reference-field">{item.description || 'Описание отсутствует'}</div>
+                    <div className="item-card">
+                        <div className="item-field" style={{  }}>{item.description || 'Описание отсутствует'}</div>
                     </div>
                 </div>
             )}
