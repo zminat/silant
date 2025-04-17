@@ -22,6 +22,7 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('accounts/', include('allauth.urls')),
     path('', homepage, name='home'),
+    path('machines/<str:id>/', homepage, name='home-machines'),
     path('machine-models/<int:id>/', homepage, name='home-machine-models'),
     path('engine-models/<int:id>/', homepage, name='home-engine-models'),
     path('transmission-models/<int:id>/', homepage, name='home-transmission-models'),

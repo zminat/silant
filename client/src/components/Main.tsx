@@ -3,11 +3,13 @@ import {useEffect, useState} from "react";
 import {useAuth} from "./context/AuthContext.tsx";
 import {MachineInfoTabs} from './MachineInfoTabs';
 import {Routes, Route} from "react-router-dom";
-import ItemDetail from "./ItemDetail.tsx";
 import {MachineTableProps, MaintenanceTableProps, ClaimTableProps} from '../types/machine.types';
-import {MachineTable} from "./tables/MachineTable";
-import {useLoadingError} from "./context/LoadingErrorContext";
+import {fetchData} from "../utils/utils.ts";
+import {useLoadingError} from "./context/LoadingErrorContext.tsx";
 import LoadingErrorDisplay from "./LoadingErrorDisplay";
+import {MachineDetailPage} from "./MachineDetailPage.tsx";
+import {MachineTable} from "./tables/MachineTable.tsx";
+import ItemDetail from "./ItemDetail.tsx";
 
 const Main = () => {
     const {isLoggedIn} = useAuth();
@@ -16,14 +18,6 @@ const Main = () => {
     const [machines, setMachines] = useState<MachineTableProps | null>(null);
     const [maintenances, setMaintenances] = useState<MaintenanceTableProps | null>(null);
     const [claims, setClaims] = useState<ClaimTableProps | null>(null);
-
-    const fetchData = async (url: string, errorMessage: string) => {
-        const response = await fetch(url);
-        if (!response.ok) {
-            throw new Error(errorMessage);
-        }
-        return await response.json();
-    };
 
     const fetchMachineData = async () => {
         try {
@@ -196,7 +190,7 @@ const Main = () => {
                         )}
                     </>
                 }/>
-                <Route path="/" element={<Main/>}/>
+                <Route path="/machines/:serial_number/" element={<MachineDetailPage />}/>
                 <Route path="/machine-models/:id/"
                        element={<ItemDetail type="machine-models" title="Модель техники"/>}/>
                 <Route path="/engine-models/:id/"

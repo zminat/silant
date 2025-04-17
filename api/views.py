@@ -126,18 +126,23 @@ class MachineViewSet(ModelViewSet):
 
     def get_queryset(self):
         user = self.request.user
+        serial_number = self.request.query_params.get('serial_number', None)
 
         if not user.is_authenticated:
-            return Machine.objects.none()
+            queryset = Machine.objects.none()
+        elif user.is_staff:
+            queryset = Machine.objects.all()
+        else:
+            service_company = ServiceCompany.objects.filter(service_manager=user).first()
+            if service_company:
+                queryset = Machine.objects.filter(service_company=service_company)
+            else:
+                queryset = Machine.objects.filter(client=user)
 
-        if user.is_staff:
-            return Machine.objects.all().order_by('shipment_date')
+        if serial_number:
+            queryset = queryset.filter(serial_number__icontains=serial_number)
 
-        service_company = ServiceCompany.objects.filter(service_manager=user).first()
-        if service_company:
-            return Machine.objects.filter(service_company=service_company).order_by('shipment_date')
-
-        return Machine.objects.filter(client=user).order_by('shipment_date')
+        return queryset.order_by('shipment_date')
 
     def list(self, request, *args, **kwargs):
         queryset = self.get_queryset()
@@ -185,18 +190,23 @@ class MaintenanceViewSet(ModelViewSet):
 
     def get_queryset(self):
         user = self.request.user
+        serial_number = self.request.query_params.get('serial_number', None)
 
         if not user.is_authenticated:
-            return Maintenance.objects.none()
+            queryset = Maintenance.objects.none()
+        elif user.is_staff:
+            queryset = Maintenance.objects.all()
+        else:
+            service_company = ServiceCompany.objects.filter(service_manager=user).first()
+            if service_company:
+                queryset = Maintenance.objects.filter(machine__service_company=service_company)
+            else:
+                queryset = Maintenance.objects.filter(machine__client=user)
 
-        if user.is_staff:
-            return Maintenance.objects.all().order_by('maintenance_date')
+        if serial_number:
+            queryset = queryset.filter(machine__serial_number__icontains=serial_number)
 
-        service_company = ServiceCompany.objects.filter(service_manager=user).first()
-        if service_company:
-            return Maintenance.objects.filter(machine__service_company=service_company).order_by('maintenance_date')
-
-        return Maintenance.objects.filter(machine__client=user).order_by('maintenance_date')
+        return queryset.order_by('maintenance_date')
 
     def list(self, request, *args, **kwargs):
         queryset = self.get_queryset()
@@ -244,18 +254,23 @@ class ClaimViewSet(ModelViewSet):
 
     def get_queryset(self):
         user = self.request.user
+        serial_number = self.request.query_params.get('serial_number', None)
 
         if not user.is_authenticated:
-            return Claim.objects.none()
+            queryset = Claim.objects.none()
+        elif user.is_staff:
+            queryset = Claim.objects.all()
+        else:
+            service_company = ServiceCompany.objects.filter(service_manager=user).first()
+            if service_company:
+                queryset = Claim.objects.filter(machine__service_company=service_company)
+            else:
+                queryset = Claim.objects.filter(machine__client=user)
 
-        if user.is_staff:
-            return Claim.objects.all().order_by('failure_date')
+        if serial_number:
+            queryset = queryset.filter(machine__serial_number__icontains=serial_number)
 
-        service_company = ServiceCompany.objects.filter(service_manager=user).first()
-        if service_company:
-            return Claim.objects.filter(machine__service_company=service_company).order_by('failure_date')
-
-        return Claim.objects.filter(machine__client=user).order_by('failure_date')
+        return queryset.order_by('failure_date')
 
     def list(self, request, *args, **kwargs):
         queryset = self.get_queryset()
