@@ -1,17 +1,17 @@
 import "../styles/Main.css";
-import { useEffect, useState } from "react";
-import { useAuth } from "./context/AuthContext.tsx";
-import { MachineInfoTabs } from './MachineInfoTabs';
-import { Routes, Route } from "react-router-dom";
+import {useEffect, useState} from "react";
+import {useAuth} from "./context/AuthContext.tsx";
+import {MachineInfoTabs} from './MachineInfoTabs';
+import {Routes, Route} from "react-router-dom";
 import ItemDetail from "./ItemDetail.tsx";
 import {MachineTableProps, MaintenanceTableProps, ClaimTableProps} from '../types/machine.types';
 import {MachineTable} from "./tables/MachineTable";
-import { useLoadingError } from "./context/LoadingErrorContext";
+import {useLoadingError} from "./context/LoadingErrorContext";
 import LoadingErrorDisplay from "./LoadingErrorDisplay";
 
 const Main = () => {
-    const { isLoggedIn } = useAuth();
-    const { loading, error, setLoading, setError, resetStates, handleError } = useLoadingError();
+    const {isLoggedIn} = useAuth();
+    const {loading, error, setLoading, setError, resetStates, handleError} = useLoadingError();
     const [serialNumber, setSerialNumber] = useState<string>('');
     const [machines, setMachines] = useState<MachineTableProps | null>(null);
     const [maintenances, setMaintenances] = useState<MaintenanceTableProps | null>(null);
@@ -68,7 +68,7 @@ const Main = () => {
         setClaims(null);
     };
 
-    const handleLoading = async() => {
+    const handleLoading = async () => {
         resetDataStates();
 
         try {
@@ -160,15 +160,17 @@ const Main = () => {
                             </>
                         )}
 
-                        <LoadingErrorDisplay />
+                        <LoadingErrorDisplay/>
 
                         {(isLoggedIn || machines) && !loading && (
                             <div className="result-container">
-                                {isLoggedIn && <h2>Информация о комплектации и технических характеристиках Вашей техники</h2>}
+                                {isLoggedIn &&
+                                    <h2>Информация о комплектации и технических характеристиках Вашей техники</h2>}
 
                                 {!isLoggedIn && !error && machines && <h3>Результаты поиска:</h3>}
 
-                                {!error && isLoggedIn && !(machines && maintenances && claims) && <p>У вас пока нет машин</p>}
+                                {!error && isLoggedIn && !(machines && maintenances && claims) &&
+                                    <p>У вас пока нет машин</p>}
 
                                 {!error && (
                                     <div className="table-container">
@@ -193,17 +195,24 @@ const Main = () => {
                             </div>
                         )}
                     </>
-                } />
-                <Route path="/" element={<Main />} />
-                <Route path="/machine-models/:id" element={<ItemDetail type="machine-models" title="Модель техники" />} />
-                <Route path="/engine-models/:id" element={<ItemDetail type="engine-models" title="Модель двигателя" />} />
-                <Route path="/transmission-models/:id" element={<ItemDetail type="transmission-models" title="Модель трансмиссии" />} />
-                <Route path="/drive-axle-models/:id" element={<ItemDetail type="drive-axle-models" title="Модель ведущего моста" />} />
-                <Route path="/steering-axle-models/:id" element={<ItemDetail type="steering-axle-models" title="Модель управляемого моста" />} />
-                <Route path="/maintenance-types/:id" element={<ItemDetail type="maintenance-types" title="Вид ТО" />} />
-                <Route path="/failure-nodes/:id" element={<ItemDetail type="failure-nodes" title="Узел отказа" />} />
-                <Route path="/recovery-methods/:id" element={<ItemDetail type="recovery-methods" title="Способ восстановления" />} />
-                <Route path="/service-companies/:id" element={<ItemDetail type="service-companies" title="Сервисная компания" />} />
+                }/>
+                <Route path="/" element={<Main/>}/>
+                <Route path="/machine-models/:id/"
+                       element={<ItemDetail type="machine-models" title="Модель техники"/>}/>
+                <Route path="/engine-models/:id/"
+                       element={<ItemDetail type="engine-models" title="Модель двигателя"/>}/>
+                <Route path="/transmission-models/:id/"
+                       element={<ItemDetail type="transmission-models" title="Модель трансмиссии"/>}/>
+                <Route path="/drive-axle-models/:id/"
+                       element={<ItemDetail type="drive-axle-models" title="Модель ведущего моста"/>}/>
+                <Route path="/steering-axle-models/:id/"
+                       element={<ItemDetail type="steering-axle-models" title="Модель управляемого моста"/>}/>
+                <Route path="/maintenance-types/:id/" element={<ItemDetail type="maintenance-types" title="Вид ТО"/>}/>
+                <Route path="/failure-nodes/:id/" element={<ItemDetail type="failure-nodes" title="Узел отказа"/>}/>
+                <Route path="/recovery-methods/:id/"
+                       element={<ItemDetail type="recovery-methods" title="Способ восстановления"/>}/>
+                <Route path="/service-companies/:id/"
+                       element={<ItemDetail type="service-companies" title="Сервисная компания"/>}/>
             </Routes>
         </div>
     );

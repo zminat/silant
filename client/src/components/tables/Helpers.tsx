@@ -85,7 +85,7 @@ export const createSerialNumberColumn = ({headerName, field, options, urlPrefix}
             const option = options.find(opt => opt.value === params.value);
             const displayValue = option ? option.label : '';
             return (
-                <Link to={`${urlPrefix}/${displayValue}`}>{displayValue}</Link>
+                <Link to={`${urlPrefix}/${displayValue}/`}>{displayValue}</Link>
             );
         }
     };
@@ -118,7 +118,7 @@ export const createReferenceColumn = ({headerName, field, options, urlPrefix}: M
             const option = options.find(option => option.value === params.value);
             const displayValue = option ? option.label : '';
             return (
-                <Link to={`${urlPrefix}/${params.data[field]}`}>{displayValue}</Link>
+                <Link to={`${urlPrefix}/${params.data[field]}/`}>{displayValue}</Link>
             );
         }
     };
@@ -151,7 +151,7 @@ export const createCompanyColumn = (headerName: string, field: string, options: 
             const option = options?.find(option => option.value === params.value);
             const displayValue = option ? option.label : '';
             if (urlPrefix && params.data[field] !== -1) {
-                return <Link to={`${urlPrefix}/${params.data[field]}`}>{displayValue}</Link>;
+                return <Link to={`${urlPrefix}/${params.data[field]}/`}>{displayValue}</Link>;
             }
 
             return displayValue;

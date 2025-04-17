@@ -158,7 +158,7 @@ export const MachineTable: FC<MachineTableProps> = ({
                 if (!isAuthenticated)
                     return params.value;
                 return params.value ? (
-                    <Link to={`/machines/${params.value}`}>{params.value}</Link>
+                    <Link to={`/machines/${params.value}/`}>{params.value}</Link>
                 ) : '';
             }
         },
@@ -209,24 +209,19 @@ export const MachineTable: FC<MachineTableProps> = ({
                 }
                 const value = params?.node?.rowIndex !== null ? params.node.rowIndex + 1 : params.value;
                 return params.data?.serialNumber ? (
-                    <Link to={`/machines/${params.data?.serialNumber}`}>{value}</Link>
+                    <Link to={`/machines/${params.data?.serialNumber}/`}>{value}</Link>
                 ) : value;
             }
         },
         ...baseColumnDefs,
         createDateColumn('Дата отгрузки с завода', 'shipmentDate'),
         createCompanyColumn('Покупатель', 'clientId', clientOptions),
-        {
-            headerName: 'Грузополучатель (конечный потребитель)',
-            field: 'consignee',
-        },
-        {
-            headerName: 'Адрес поставки (эксплуатации)',
-            field: 'deliveryAddress',
-        },
+        createSimpleColumn('Грузополучатель (конечный потребитель)','consignee'),
+        createSimpleColumn('Адрес поставки (эксплуатации)', 'deliveryAddress'),
         {
             headerName: 'Комплектация (доп. опции)',
             field: 'equipment',
+            cellClass: 'ag-align-text-left'
         },
         createCompanyColumn('Сервисная компания', 'serviceCompanyId', serviceCompanyOptions, '/service-companies')
     ], [isAuthenticated, baseColumnDefs, clientOptions, serviceCompanyOptions]);
