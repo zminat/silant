@@ -294,7 +294,12 @@ export const MachineTable: FC<MachineTableProps> = ({
             domLayout='autoHeight'
             rowHeight={40}
             headerHeight={40}
-            rowSelection='multiple'
+            rowSelection={{
+                mode: 'multiRow',
+                checkboxes: false,
+                headerCheckbox: false,
+                enableClickSelection: true
+            }}
             onCellValueChanged={onCellValueChanged}
             postSortRows={keepNewRowAtBottom}
         />
