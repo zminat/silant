@@ -33,6 +33,8 @@ export const ClaimTable: FC<ClaimTableProps> = ({
         },
         wrapText: true,
         autoHeight: true,
+        autoHeaderHeight: true,
+        resizable: true,
         editable: permissions.can_edit,
         suppressKeyboardEvent: deleteSelectedRows(
             '/api/claims',

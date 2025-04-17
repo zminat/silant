@@ -34,6 +34,8 @@ export const MachineTable: FC<MachineTableProps> = ({
         },
         wrapText: true,
         autoHeight: true,
+        autoHeaderHeight: true,
+        resizable: true,
         editable: permissions.can_edit,
         suppressKeyboardEvent: deleteSelectedRows(
             '/api/machines',

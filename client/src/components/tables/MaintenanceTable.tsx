@@ -34,6 +34,8 @@ export const MaintenanceTable: FC<MaintenanceTableProps> = ({
         },
         wrapText: true,
         autoHeight: true,
+        autoHeaderHeight: true,
+        resizable: true,
         editable: permissions.can_edit,
         suppressKeyboardEvent: deleteSelectedRows(
             '/api/maintenances',
