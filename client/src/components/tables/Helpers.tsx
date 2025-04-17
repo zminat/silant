@@ -165,12 +165,9 @@ export const saveNewRow = async (
     data: any,
     node: any,
     emptyRow: any,
-    setLoading: React.Dispatch<React.SetStateAction<boolean>>,
     handleError: (err: unknown) => void
 ): Promise<any> => {
     try {
-        setLoading(true);
-
         const response = await fetch(url, {
             method: 'POST',
             headers: {
@@ -199,8 +196,6 @@ export const saveNewRow = async (
     } catch (error) {
         handleError(error);
         throw error;
-    } finally {
-        setLoading(false);
     }
 };
 
@@ -224,14 +219,11 @@ export const updateRow = async (
     data: any,
     newValue: any,
     oldValue: any,
-    setLoading: React.Dispatch<React.SetStateAction<boolean>>,
     handleError: (err: unknown) => void
 ) => {
     if (oldValue === newValue) return;
 
     try {
-        setLoading(true);
-
         const response = await fetch(`${baseUrl}/${data.id}/`, {
             method: 'PATCH',
             headers: {
@@ -251,15 +243,12 @@ export const updateRow = async (
         handleError(error);
         api.stopEditing();
         api.undoCellEditing();
-    } finally {
-        setLoading(false);
     }
 };
 
 export const deleteSelectedRows = (
     baseUrl: string,
     canDelete: boolean,
-    setLoading: React.Dispatch<React.SetStateAction<boolean>>,
     handleError: (err: unknown) => void,
     confirmMessage: string = "Вы уверены, что хотите удалить выбранные записи?"
 ): (params: SuppressKeyboardEventParams) => boolean => {
@@ -280,8 +269,6 @@ export const deleteSelectedRows = (
         if (!window.confirm(confirmMessage)) {
             return true;
         }
-
-        setLoading(true);
 
         const deletePromises = selectedIds.map(id => {
             const deleteUrl = `${baseUrl}/${id}/`;
@@ -314,9 +301,6 @@ export const deleteSelectedRows = (
             })
             .catch(error => {
                 handleError(error);
-            })
-            .finally(() => {
-                setLoading(false);
             });
 
         return true;

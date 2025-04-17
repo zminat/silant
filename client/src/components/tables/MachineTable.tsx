@@ -27,7 +27,7 @@ export const MachineTable: FC<MachineTableProps> = ({
                                                         isAuthenticated
                                                     }) => {
 
-    const { setLoading, handleError } = useLoadingError();
+    const { handleError } = useLoadingError();
 
     const defaultColDef = useMemo(() => ({
         sortable: true,
@@ -44,7 +44,6 @@ export const MachineTable: FC<MachineTableProps> = ({
         suppressKeyboardEvent: deleteSelectedRows(
             '/api/machines',
             permissions.can_delete,
-            setLoading,
             handleError
         )
     }), [permissions]);
@@ -221,7 +220,13 @@ export const MachineTable: FC<MachineTableProps> = ({
         {
             headerName: 'Комплектация (доп. опции)',
             field: 'equipment',
-            cellClass: 'ag-align-text-left'
+            cellClass: 'ag-align-text-left',
+            cellEditor: 'agLargeTextCellEditor',
+            cellEditorPopup: true,
+            cellEditorParams: {
+                rows: 5,
+                cols: 25
+            }
         },
         createCompanyColumn('Сервисная компания', 'serviceCompanyId', serviceCompanyOptions, '/service-companies')
     ], [isAuthenticated, baseColumnDefs, clientOptions, serviceCompanyOptions]);
@@ -276,13 +281,13 @@ export const MachineTable: FC<MachineTableProps> = ({
 
         if (data.id !== -2) {
             const convertedData = convertData(data);
-            updateRow('/api/machines', api, convertedData, oldValue, newValue, setLoading, handleError);
+            updateRow('/api/machines', api, convertedData, oldValue, newValue, handleError);
             return;
         }
 
         if (checkRequiredFields(data)) {
             const convertedData = convertData(data);
-            saveNewRow('/api/machines/', api, convertedData, node, createEmptyRow(), setLoading, handleError);
+            saveNewRow('/api/machines/', api, convertedData, node, createEmptyRow(), handleError);
         }
     };
 

@@ -26,7 +26,7 @@ export const ClaimTable: FC<ClaimTableProps> = ({
                                                     permissions,
                                                 }) => {
 
-    const { setLoading, handleError } = useLoadingError();
+    const { handleError } = useLoadingError();
 
     const defaultColDef = useMemo(() => ({
         sortable: true,
@@ -43,7 +43,6 @@ export const ClaimTable: FC<ClaimTableProps> = ({
         suppressKeyboardEvent: deleteSelectedRows(
             '/api/claims',
             permissions.can_delete,
-            setLoading,
             handleError
         )
     }), [permissions]);
@@ -163,13 +162,13 @@ export const ClaimTable: FC<ClaimTableProps> = ({
 
         if (data.id !== -2) {
             const convertedData = convertData(data);
-            updateRow('/api/claims', api, convertedData, oldValue, newValue, setLoading, handleError);
+            updateRow('/api/claims', api, convertedData, oldValue, newValue, handleError);
             return;
         }
 
         if (checkRequiredFields(data)) {
             const convertedData = convertData(data);
-            saveNewRow('/api/claims/', api, convertedData, node, createEmptyRow(), setLoading, handleError);
+            saveNewRow('/api/claims/', api, convertedData, node, createEmptyRow(), handleError);
         }
     };
 

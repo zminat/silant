@@ -27,7 +27,7 @@ export const MaintenanceTable: FC<MaintenanceTableProps> = ({
                                                                 permissions
                                                             }) => {
 
-    const { setLoading, handleError } = useLoadingError();
+    const { handleError } = useLoadingError();
 
     const defaultColDef = useMemo(() => ({
         sortable: true,
@@ -44,7 +44,6 @@ export const MaintenanceTable: FC<MaintenanceTableProps> = ({
         suppressKeyboardEvent: deleteSelectedRows(
             '/api/maintenances',
             permissions.can_delete,
-            setLoading,
             handleError
         )
     }), [permissions]);
@@ -142,13 +141,13 @@ export const MaintenanceTable: FC<MaintenanceTableProps> = ({
 
         if (data.id !== -2) {
             const convertedData = convertData(data);
-            updateRow('/api/maintenances', api, convertedData, oldValue, newValue, setLoading, handleError);
+            updateRow('/api/maintenances', api, convertedData, oldValue, newValue, handleError);
             return;
         }
 
         if (checkRequiredFields(data)) {
             const convertedData = convertData(data);
-            saveNewRow('/api/maintenances/', api, convertedData, node, createEmptyRow(), setLoading, handleError);
+            saveNewRow('/api/maintenances/', api, convertedData, node, createEmptyRow(), handleError);
         }
     };
 
