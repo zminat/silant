@@ -1,5 +1,6 @@
 import {createContext, useContext, useState, useEffect, ReactNode} from "react";
 import {getCookie} from "../../utils/utils.ts";
+import {NavigateFunction} from "react-router-dom";
 
 interface UserInfo {
     username: string;
@@ -14,7 +15,7 @@ interface AuthContextType {
     setUserInfo: (value: UserInfo | null) => void;
     login: (formData: FormData) => Promise<{ success: boolean, error?: string }>;
     checkAuthStatus: () => Promise<boolean>;
-    logout: () => Promise<void>;
+    logout: (redirectCallback?: NavigateFunction) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | null>(null);
@@ -102,7 +103,7 @@ export const AuthProvider = ({children}: { children: ReactNode }) => {
         }
     };
 
-    const logout = async () => {
+    const logout = async (redirectCallback?: NavigateFunction) => {
         try {
             const response = await fetch('/api/auth/logout/', {
                 method: 'POST',
@@ -114,6 +115,10 @@ export const AuthProvider = ({children}: { children: ReactNode }) => {
             if (response.ok) {
                 setIsLoggedIn(false);
                 setUserInfo(null);
+
+                if (redirectCallback) {
+                    redirectCallback('/');
+                }
             } else {
                 console.error('Ошибка при выходе из системы');
             }

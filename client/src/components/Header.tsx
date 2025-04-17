@@ -4,9 +4,11 @@ import logoIcon from "../assets/img/logo-icon.svg"
 import {useState, useEffect} from "react";
 import {useAuth} from "./contexts/AuthContext.tsx";
 import LoginModal from "./LoginModal";
+import {useNavigate} from "react-router-dom";
 
 function Header() {
     const { isLoggedIn, setIsLoggedIn, logout } = useAuth();
+    const navigate = useNavigate();
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [isMobile, setIsMobile] = useState(window.innerWidth <= 480);
 
@@ -34,7 +36,7 @@ function Header() {
     };
 
     const handleLogout = async () => {
-        await logout();
+        await logout(navigate);
         handleCloseModal();
     };
 
