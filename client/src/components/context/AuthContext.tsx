@@ -1,5 +1,5 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from "react";
-import {getCookie} from "../utils/utils.ts";
+import {getCookie} from "../../utils/utils.ts";
 
 interface AuthContextType {
     isLoggedIn: boolean;

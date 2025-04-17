@@ -17,6 +17,7 @@ import {
     updateRow,
     keepNewRowAtBottom
 } from "./Helpers.tsx";
+import {useLoadingError} from "../context/LoadingErrorContext.tsx";
 
 ModuleRegistry.registerModules([AllCommunityModule]);
 
@@ -25,6 +26,9 @@ export const MaintenanceTable: FC<MaintenanceTableProps> = ({
                                                                 dictionaries,
                                                                 permissions
                                                             }) => {
+
+    const { setLoading, handleError } = useLoadingError();
+
     const defaultColDef = useMemo(() => ({
         sortable: true,
         filter: true,
@@ -39,7 +43,10 @@ export const MaintenanceTable: FC<MaintenanceTableProps> = ({
         editable: permissions.can_edit,
         suppressKeyboardEvent: deleteSelectedRows(
             '/api/maintenances',
-            permissions.can_delete)
+            permissions.can_delete,
+            setLoading,
+            handleError
+        )
     }), [permissions]);
 
     const createEmptyRow = () => {
@@ -135,13 +142,13 @@ export const MaintenanceTable: FC<MaintenanceTableProps> = ({
 
         if (data.id !== -2) {
             const convertedData = convertData(data);
-            updateRow('/api/maintenances', api, convertedData, oldValue, newValue);
+            updateRow('/api/maintenances', api, convertedData, oldValue, newValue, setLoading, handleError);
             return;
         }
 
         if (checkRequiredFields(data)) {
             const convertedData = convertData(data);
-            saveNewRow('/api/maintenances/', api, convertedData, node, createEmptyRow());
+            saveNewRow('/api/maintenances/', api, convertedData, node, createEmptyRow(), setLoading, handleError);
         }
     };
 

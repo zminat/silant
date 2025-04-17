@@ -16,6 +16,7 @@ import {
     updateRow,
     keepNewRowAtBottom
 } from "./Helpers.tsx";
+import { useLoadingError } from '../context/LoadingErrorContext';
 
 ModuleRegistry.registerModules([AllCommunityModule]);
 
@@ -24,6 +25,9 @@ export const ClaimTable: FC<ClaimTableProps> = ({
                                                     dictionaries,
                                                     permissions,
                                                 }) => {
+
+    const { setLoading, handleError } = useLoadingError();
+
     const defaultColDef = useMemo(() => ({
         sortable: true,
         filter: true,
@@ -38,7 +42,10 @@ export const ClaimTable: FC<ClaimTableProps> = ({
         editable: permissions.can_edit,
         suppressKeyboardEvent: deleteSelectedRows(
             '/api/claims',
-            permissions.can_delete)
+            permissions.can_delete,
+            setLoading,
+            handleError
+        )
     }), [permissions]);
 
     const createEmptyRow = () => {
@@ -156,13 +163,13 @@ export const ClaimTable: FC<ClaimTableProps> = ({
 
         if (data.id !== -2) {
             const convertedData = convertData(data);
-            updateRow('/api/claims', api, convertedData, oldValue, newValue);
+            updateRow('/api/claims', api, convertedData, oldValue, newValue, setLoading, handleError);
             return;
         }
 
         if (checkRequiredFields(data)) {
             const convertedData = convertData(data);
-            saveNewRow('/api/claims/', api, convertedData, node, createEmptyRow());
+            saveNewRow('/api/claims/', api, convertedData, node, createEmptyRow(), setLoading, handleError);
         }
     };
 

@@ -4,6 +4,7 @@ import {AllCommunityModule, ModuleRegistry, ICellRendererParams, themeMaterial} 
 import AG_GRID_LOCALE_RU from '../../locale/AG_GRID_LOCALE_RU.ts';
 import {MachineTableProps} from '../../types/machine.types';
 import '../../styles/Main.css';
+import {Link} from "react-router-dom";
 import {
     deleteSelectedRows,
     createOptionsFromDictionary,
@@ -15,7 +16,7 @@ import {
     updateRow,
     keepNewRowAtBottom
 } from "./Helpers.tsx";
-import {Link} from "react-router-dom";
+import {useLoadingError} from "../context/LoadingErrorContext.tsx";
 
 ModuleRegistry.registerModules([AllCommunityModule]);
 
@@ -25,6 +26,9 @@ export const MachineTable: FC<MachineTableProps> = ({
                                                         permissions,
                                                         isAuthenticated
                                                     }) => {
+
+    const { setLoading, handleError } = useLoadingError();
+
     const defaultColDef = useMemo(() => ({
         sortable: true,
         filter: true,
@@ -39,7 +43,10 @@ export const MachineTable: FC<MachineTableProps> = ({
         editable: permissions.can_edit,
         suppressKeyboardEvent: deleteSelectedRows(
             '/api/machines',
-            permissions.can_delete)
+            permissions.can_delete,
+            setLoading,
+            handleError
+        )
     }), [permissions]);
 
     const createEmptyRow = () => {
@@ -274,13 +281,13 @@ export const MachineTable: FC<MachineTableProps> = ({
 
         if (data.id !== -2) {
             const convertedData = convertData(data);
-            updateRow('/api/machines', api, convertedData, oldValue, newValue);
+            updateRow('/api/machines', api, convertedData, oldValue, newValue, setLoading, handleError);
             return;
         }
 
         if (checkRequiredFields(data)) {
             const convertedData = convertData(data);
-            saveNewRow('/api/machines/', api, convertedData, node, createEmptyRow());
+            saveNewRow('/api/machines/', api, convertedData, node, createEmptyRow(), setLoading, handleError);
         }
     };
 

@@ -58,7 +58,6 @@ export const createDateColumn = (headerName: string, field: string) => {
     };
 };
 
-
 export const createSerialNumberColumn = ({headerName, field, options, urlPrefix}: ModelColumnConfig): ColDef => {
     return {
         headerName,
@@ -165,9 +164,13 @@ export const saveNewRow = async (
     api: GridApi,
     data: any,
     node: any,
-    emptyRow: any
+    emptyRow: any,
+    setLoading: React.Dispatch<React.SetStateAction<boolean>>,
+    handleError: (err: unknown) => void
 ): Promise<any> => {
     try {
+        setLoading(true);
+
         const response = await fetch(url, {
             method: 'POST',
             headers: {
@@ -178,7 +181,9 @@ export const saveNewRow = async (
         });
 
         if (!response.ok) {
-            return {success: false, error: `Ошибка при добавлении: ${response.status}`};
+            const errorMessage = `Ошибка при добавлении: ${response.status}`;
+            handleError(new Error(errorMessage));
+            return { success: false, error: errorMessage };
         }
 
         const newRecord = await response.json();
@@ -192,8 +197,10 @@ export const saveNewRow = async (
 
         return newRecord;
     } catch (error) {
-        console.error('Ошибка при сохранении новой записи:', error);
+        handleError(error);
         throw error;
+    } finally {
+        setLoading(false);
     }
 };
 
@@ -211,11 +218,20 @@ export const keepNewRowAtBottom = (
     params.nodes = nodes;
 };
 
-
-export const updateRow = async (baseUrl: string, api: GridApi, data: any, newValue: any, oldValue: any) => {
+export const updateRow = async (
+    baseUrl: string,
+    api: GridApi,
+    data: any,
+    newValue: any,
+    oldValue: any,
+    setLoading: React.Dispatch<React.SetStateAction<boolean>>,
+    handleError: (err: unknown) => void
+) => {
     if (oldValue === newValue) return;
 
     try {
+        setLoading(true);
+
         const response = await fetch(`${baseUrl}/${data.id}/`, {
             method: 'PATCH',
             headers: {
@@ -227,19 +243,24 @@ export const updateRow = async (baseUrl: string, api: GridApi, data: any, newVal
         });
 
         if (!response.ok) {
-            return {success: false, error: `Ошибка при сохранении: ${response.status}`};
+            const errorMessage = `Ошибка при сохранении: ${response.status}`;
+            handleError(new Error(errorMessage));
+            return { success: false, error: errorMessage };
         }
     } catch (error) {
+        handleError(error);
         api.stopEditing();
         api.undoCellEditing();
-
-        console.error('Ошибка при сохранении данных:', error);
+    } finally {
+        setLoading(false);
     }
 };
 
 export const deleteSelectedRows = (
     baseUrl: string,
     canDelete: boolean,
+    setLoading: React.Dispatch<React.SetStateAction<boolean>>,
+    handleError: (err: unknown) => void,
     confirmMessage: string = "Вы уверены, что хотите удалить выбранные записи?"
 ): (params: SuppressKeyboardEventParams) => boolean => {
     return (params: SuppressKeyboardEventParams): boolean => {
@@ -260,10 +281,12 @@ export const deleteSelectedRows = (
             return true;
         }
 
-        selectedIds.forEach(id => {
+        setLoading(true);
+
+        const deletePromises = selectedIds.map(id => {
             const deleteUrl = `${baseUrl}/${id}/`;
 
-            fetch(deleteUrl, {
+            return fetch(deleteUrl, {
                 method: 'DELETE',
                 headers: {
                     'Content-Type': 'application/json',
@@ -275,19 +298,26 @@ export const deleteSelectedRows = (
                     if (!response.ok) {
                         throw new Error(`Ошибка удаления записи с ID ${id}: ${response.status}`);
                     }
-
-                    api.applyTransaction({
-                        remove: selectedNodes.map(node => node.data)
-                    });
-
-                    api.deselectAll();
-                    api.refreshCells();
-
-                })
-                .catch(error => {
-                    console.error('Ошибка удаления:', error);
+                    return id;
                 });
         });
+
+        Promise.all(deletePromises)
+            .then(successfulIds => {
+                api.applyTransaction({
+                    remove: selectedNodes
+                        .filter(node => successfulIds.includes(node.data.id))
+                        .map(node => node.data)
+                });
+                api.deselectAll();
+                api.refreshCells();
+            })
+            .catch(error => {
+                handleError(error);
+            })
+            .finally(() => {
+                setLoading(false);
+            });
 
         return true;
     };

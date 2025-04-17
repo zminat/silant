@@ -2,7 +2,7 @@ import "../styles/Header.css";
 import headerIconUrl from "../assets/img/logo-header.svg";
 import logoIcon from "../assets/img/logo-icon.svg"
 import {useState, useEffect} from "react";
-import {useAuth} from "./AuthContext.tsx";
+import {useAuth} from "./context/AuthContext.tsx";
 import LoginModal from "./LoginModal";
 
 function Header() {
@@ -20,12 +20,10 @@ function Header() {
     }, []);
 
 
-    // Обработчик для открытия модального окна
     const handleLoginClick = () => {
         setIsModalOpen(true);
     };
 
-    // Обработчик для закрытия модального окна
     const handleCloseModal = () => {
         setIsModalOpen(false);
     };
