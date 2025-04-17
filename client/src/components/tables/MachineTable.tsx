@@ -16,7 +16,7 @@ import {
     updateRow,
     keepNewRowAtBottom
 } from "./Helpers.tsx";
-import {useLoadingError} from "../context/LoadingErrorContext.tsx";
+import {useLoadingError} from "../contexts/LoadingErrorContext.tsx";
 
 ModuleRegistry.registerModules([AllCommunityModule]);
 

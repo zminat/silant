@@ -1,18 +1,18 @@
 import "../styles/Main.css";
 import {useEffect, useState} from "react";
-import {useAuth} from "./context/AuthContext.tsx";
+import {useAuth} from "./contexts/AuthContext.tsx";
 import {MachineInfoTabs} from './MachineInfoTabs';
 import {Routes, Route} from "react-router-dom";
 import {MachineTableProps, MaintenanceTableProps, ClaimTableProps} from '../types/machine.types';
 import {fetchData} from "../utils/utils.ts";
-import {useLoadingError} from "./context/LoadingErrorContext.tsx";
+import {useLoadingError} from "./contexts/LoadingErrorContext.tsx";
 import LoadingErrorDisplay from "./LoadingErrorDisplay";
 import {MachineDetailPage} from "./MachineDetailPage.tsx";
 import {MachineTable} from "./tables/MachineTable.tsx";
 import ItemDetail from "./ItemDetail.tsx";
 
 const Main = () => {
-    const {isLoggedIn} = useAuth();
+    const {isLoggedIn, userInfo} = useAuth();
     const {loading, error, setLoading, setError, resetStates, handleError} = useLoadingError();
     const [serialNumber, setSerialNumber] = useState<string>('');
     const [machines, setMachines] = useState<MachineTableProps | null>(null);
@@ -158,6 +158,17 @@ const Main = () => {
 
                         {(isLoggedIn || machines) && !loading && (
                             <div className="result-container">
+                                {isLoggedIn && userInfo && (
+                                    <h1>
+                                        {userInfo.userType === 'service_company'
+                                            ? `Сервисная компания: ${userInfo.organizationName}`
+                                            : userInfo.userType === 'manager'
+                                                ? `Менеджер: ${userInfo.username}`
+                                                : `Клиент: ${userInfo.username}`
+                                        }
+                                    </h1>
+                                )}
+
                                 {isLoggedIn &&
                                     <h2>Информация о комплектации и технических характеристиках Вашей техники</h2>}
 
@@ -190,7 +201,7 @@ const Main = () => {
                         )}
                     </>
                 }/>
-                <Route path="/machines/:serial_number/" element={<MachineDetailPage />}/>
+                <Route path="/machines/:serial_number/" element={<MachineDetailPage/>}/>
                 <Route path="/machine-models/:id/"
                        element={<ItemDetail type="machine-models" title="Модель техники"/>}/>
                 <Route path="/engine-models/:id/"

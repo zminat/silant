@@ -1,7 +1,7 @@
 import '../styles/ItemDetail.css';
 import {useState, useEffect, useCallback} from 'react';
 import {useParams} from 'react-router-dom';
-import {useLoadingError} from './context/LoadingErrorContext';
+import {useLoadingError} from './contexts/LoadingErrorContext';
 import LoadingErrorDisplay from "./LoadingErrorDisplay.tsx";
 
 interface ReferenceItem {

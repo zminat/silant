@@ -2,7 +2,7 @@ from django.db.models import Case, When, Value, IntegerField
 from django.contrib.auth.models import User
 from django.shortcuts import render
 from rest_framework import status
-from rest_framework.decorators import action
+from rest_framework.decorators import action, api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated, DjangoModelPermissions, AllowAny
 from rest_framework.response import Response
 from rest_framework.viewsets import ReadOnlyModelViewSet, ModelViewSet
@@ -17,6 +17,41 @@ from .serializers import MachineSerializer, MachineListSerializer, MachineLimite
 
 def homepage(request, id=None):
     return render(request, 'index.html')
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def user_info(request):
+    user = request.user
+
+    if user.is_staff:
+        user_type = 'manager'
+        organization_name = 'Администратор'
+        return Response({
+            'username': user.username,
+            'userType': user_type,
+            'organizationName': organization_name
+        })
+
+    service_company = ServiceCompany.objects.filter(service_manager=user).first()
+
+    is_service_user = ServiceCompany.objects.filter(users__id=user.id).exists()
+
+    if service_company:
+        user_type = 'service_company'
+        organization_name = service_company.name
+    elif is_service_user:
+        user_type = 'service_company'
+        organization_name = ServiceCompany.objects.filter(users__id=user.id).first().name
+    else:
+        user_type = 'client'
+        organization_name = user.first_name or user.username
+
+    return Response({
+        'username': user.username,
+        'userType': user_type,
+        'organizationName': organization_name
+    })
 
 
 class BaseReferenceViewSet(ReadOnlyModelViewSet):

@@ -1,5 +1,5 @@
 import React from 'react';
-import { useLoadingError } from './context/LoadingErrorContext';
+import { useLoadingError } from './contexts/LoadingErrorContext';
 
 const LoadingErrorDisplay: React.FC = () => {
     const { loading, error } = useLoadingError();

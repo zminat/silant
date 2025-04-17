@@ -1,5 +1,5 @@
-import {useAuth} from "./context/AuthContext.tsx";
-import {useLoadingError} from "./context/LoadingErrorContext.tsx";
+import {useAuth} from "./contexts/AuthContext.tsx";
+import {useLoadingError} from "./contexts/LoadingErrorContext.tsx";
 import {useEffect, useState} from "react";
 import {ClaimTableProps, MachineTableProps, MaintenanceTableProps} from "../types/machine.types.ts";
 import {fetchData} from "../utils/utils.ts";

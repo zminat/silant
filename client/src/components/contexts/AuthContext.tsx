@@ -1,21 +1,29 @@
-import { createContext, useContext, useState, useEffect, ReactNode } from "react";
+import {createContext, useContext, useState, useEffect, ReactNode} from "react";
 import {getCookie} from "../../utils/utils.ts";
+
+interface UserInfo {
+    username: string;
+    userType: 'client' | 'service_company' | 'manager' | null;
+    organizationName: string | null;
+}
 
 interface AuthContextType {
     isLoggedIn: boolean;
     setIsLoggedIn: (value: boolean) => void;
-    getCookie: (name:string) => string,
-    login: (formData: FormData) => Promise<{success: boolean, error?: string}>;
+    userInfo: UserInfo | null;
+    setUserInfo: (value: UserInfo | null) => void;
+    login: (formData: FormData) => Promise<{ success: boolean, error?: string }>;
     checkAuthStatus: () => Promise<boolean>;
     logout: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | null>(null);
 
-export const AuthProvider = ({ children }: { children: ReactNode }) => {
+export const AuthProvider = ({children}: { children: ReactNode }) => {
     const [isLoggedIn, setIsLoggedIn] = useState(false);
+    const [userInfo, setUserInfo] = useState<UserInfo | null>(null);
 
-    const login = async (formData: FormData): Promise<{success: boolean, error?: string}> => {
+    const login = async (formData: FormData): Promise<{ success: boolean, error?: string }> => {
         try {
             const response = await fetch('/api/auth/login/', {
                 method: 'POST',
@@ -28,7 +36,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
             if (response.ok) {
                 setIsLoggedIn(true);
-                return { success: true };
+                await fetchUserInfo();
+                return {success: true};
             } else {
                 return {
                     success: false,
@@ -44,9 +53,30 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         }
     };
 
+    const fetchUserInfo = async () => {
+        try {
+            const response = await fetch('/api/auth/user/info/', {
+                headers: {
+                    'X-CSRFToken': getCookie('csrftoken') || '',
+                },
+                credentials: 'include'
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                setUserInfo(data);
+            }
+        } catch (error) {
+            console.error("Ошибка получения информации о пользователе:", error);
+        }
+    };
+
     const checkAuthStatus = async (): Promise<boolean> => {
         try {
             const response = await fetch('/api/auth/user/', {
+                headers: {
+                    'X-CSRFToken': getCookie('csrftoken') || '',
+                },
                 credentials: 'include'
             });
 
@@ -54,15 +84,20 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
                 const data = await response.json();
                 const isAuthenticated = Boolean(data?.username);
                 setIsLoggedIn(isAuthenticated);
+
+                if (isAuthenticated) {
+                    await fetchUserInfo();
+                }
+
                 return isAuthenticated;
             } else {
-                console.error('Ошибка при проверке авторизации:', response.statusText);
                 setIsLoggedIn(false);
+                setUserInfo(null);
                 return false;
             }
         } catch (error) {
-            console.error('Ошибка при проверке авторизации:', error);
             setIsLoggedIn(false);
+            setUserInfo(null);
             return false;
         }
     };
@@ -78,6 +113,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
             if (response.ok) {
                 setIsLoggedIn(false);
+                setUserInfo(null);
             } else {
                 console.error('Ошибка при выходе из системы');
             }
@@ -94,7 +130,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         <AuthContext.Provider value={{
             isLoggedIn,
             setIsLoggedIn,
-            getCookie,
+            userInfo,
+            setUserInfo,
             login,
             checkAuthStatus,
             logout

@@ -2,7 +2,7 @@ import "../styles/Header.css";
 import headerIconUrl from "../assets/img/logo-header.svg";
 import logoIcon from "../assets/img/logo-icon.svg"
 import {useState, useEffect} from "react";
-import {useAuth} from "./context/AuthContext.tsx";
+import {useAuth} from "./contexts/AuthContext.tsx";
 import LoginModal from "./LoginModal";
 
 function Header() {
