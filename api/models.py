@@ -89,7 +89,7 @@ class Machine(models.Model):
     steering_axle_model = models.ForeignKey(SteeringAxleModel, on_delete=models.PROTECT,
                                             verbose_name="Модель управляемого моста")
     steering_axle_serial_number = models.CharField(max_length=255, verbose_name="Заводской номер управляемого моста")
-    contract_info = models.CharField(max_length=255, verbose_name="Договор поставки №, дата")
+    contract_info = models.CharField(blank=True, default="", max_length=255, verbose_name="Договор поставки №, дата")
     shipment_date = models.DateField(verbose_name="Дата отгрузки с завода")
     consignee = models.CharField(max_length=255, verbose_name="Грузополучатель (конечный потребитель)")
     delivery_address = models.TextField(verbose_name="Адрес поставки (эксплуатации)")

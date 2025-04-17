@@ -11,7 +11,9 @@ import {
     createDateColumn,
     createReferenceColumn,
     createCompanyColumn,
-    saveRow
+    saveNewRow,
+    updateRow,
+    keepNewRowAtBottom
 } from "./Helpers.tsx";
 import {Link} from "react-router-dom";
 
@@ -38,8 +40,30 @@ export const MachineTable: FC<MachineTableProps> = ({
             permissions.can_delete)
     }), [permissions]);
 
+    const createEmptyRow = () => {
+        return {
+            id: -2,
+            modelId: -2,
+            serialNumber: '',
+            engineModelId: -2,
+            engineSerialNumber: '',
+            transmissionModelId: -2,
+            transmissionSerialNumber: '',
+            driveAxleModelId: -2,
+            driveAxleSerialNumber: '',
+            steeringAxleModelId: -2,
+            steeringAxleSerialNumber: '',
+            shipmentDate: '',
+            clientId: -2,
+            consignee: '',
+            deliveryAddress: '',
+            equipment: '',
+            serviceCompanyId: -2
+        };
+    }
+
     const rowData = useMemo(() => {
-        return machines.map((machine) => {
+        const preparedData = machines.map((machine) => {
             const data = {
                 modelId: machine.model_id,
                 serialNumber: machine.serial_number,
@@ -68,7 +92,11 @@ export const MachineTable: FC<MachineTableProps> = ({
 
             return data;
         });
-    }, [machines, isAuthenticated]);
+        if (permissions.can_create) {
+            preparedData.push(createEmptyRow());
+        }
+        return preparedData;
+    }, [machines, isAuthenticated, permissions.can_create]);
 
     const modelOptions = useMemo(() =>
             createOptionsFromDictionary(dictionaries.models),
@@ -164,9 +192,12 @@ export const MachineTable: FC<MachineTableProps> = ({
     const advancedColumnDefs = useMemo(() => [
         {
             headerName: '№',
-            width: 60,
+            width: 70,
             editable: false,
             cellRenderer: (params: ICellRendererParams) => {
+                if (params.data?.id === -2) {
+                    return null;
+                }
                 const value = params?.node?.rowIndex !== null ? params.node.rowIndex + 1 : params.value;
                 return params.data?.serialNumber ? (
                     <Link to={`/machines/${params.data?.serialNumber}`}>{value}</Link>
@@ -196,10 +227,8 @@ export const MachineTable: FC<MachineTableProps> = ({
         [isAuthenticated, baseColumnDefs, advancedColumnDefs]
     );
 
-    const onCellValueChanged = (params: any) => {
-        const {data, newValue, oldValue, api} = params;
-
-        const convertedData = {
+    const convertData = (data: any) => {
+        return {
             id: data.id,
             model: data.modelId,
             serial_number: data.serialNumber,
@@ -218,8 +247,39 @@ export const MachineTable: FC<MachineTableProps> = ({
             equipment: data.equipment,
             service_company: data.serviceCompanyId,
         };
+    }
 
-        saveRow('/api/machines', api, convertedData, oldValue, newValue);
+    const checkRequiredFields = (data: any) => {
+        return data.modelId !== -2 &&
+            data.serialNumber !== '' &&
+            data.engineModelId !== -2 &&
+            data.engineSerialNumber !== '' &&
+            data.transmissionModelId !== -2 &&
+            data.transmissionSerialNumber !== '' &&
+            data.driveAxleModelId !== -2 &&
+            data.driveAxleSerialNumber !== '' &&
+            data.steeringAxleModelId !== -2 &&
+            data.steeringAxleSerialNumber !== '' &&
+            data.shipmentDate !== '' &&
+            data.clientId !== -2 &&
+            data.consignee !== '' &&
+            data.deliveryAddress !== '' &&
+            data.serviceCompanyId !== -2;
+    }
+
+    const onCellValueChanged = (params: any) => {
+        const {data, node, newValue, oldValue, api} = params;
+
+        if (data.id !== -2) {
+            const convertedData = convertData(data);
+            updateRow('/api/machines', api, convertedData, oldValue, newValue);
+            return;
+        }
+
+        if (checkRequiredFields(data)) {
+            const convertedData = convertData(data);
+            saveNewRow('/api/machines/', api, convertedData, node, createEmptyRow());
+        }
     };
 
     return (
@@ -234,6 +294,7 @@ export const MachineTable: FC<MachineTableProps> = ({
             headerHeight={40}
             rowSelection='multiple'
             onCellValueChanged={onCellValueChanged}
+            postSortRows={keepNewRowAtBottom}
         />
     );
 };

@@ -222,6 +222,21 @@ class MaintenanceViewSet(ModelViewSet):
             'permissions': permissions
         })
 
+    def create(self, request, *args, **kwargs):
+        request_data = request.data.copy()
+        if 'service_company' not in request_data and 'machine' in request_data:
+            try:
+                machine_id = request_data['machine']
+                machine = Machine.objects.get(id=machine_id)
+
+                if machine.service_company:
+                    request_data['service_company'] = machine.service_company.id
+            except Machine.DoesNotExist:
+                pass
+
+        request._full_data = request_data
+        return super().create(request, *args, **kwargs)
+
 
 class ClaimViewSet(ModelViewSet):
     serializer_class = ClaimSerializer
@@ -263,3 +278,18 @@ class ClaimViewSet(ModelViewSet):
             'dictionaries': dictionaries,
             'permissions': permissions
         })
+
+    def create(self, request, *args, **kwargs):
+        request_data = request.data.copy()
+        if 'service_company' not in request_data and 'machine' in request_data:
+            try:
+                machine_id = request_data['machine']
+                machine = Machine.objects.get(id=machine_id)
+
+                if machine.service_company:
+                    request_data['service_company'] = machine.service_company.id
+            except Machine.DoesNotExist:
+                pass
+
+        request._full_data = request_data
+        return super().create(request, *args, **kwargs)

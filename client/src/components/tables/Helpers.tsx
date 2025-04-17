@@ -160,7 +160,59 @@ export const createCompanyColumn = (headerName: string, field: string, options: 
     };
 };
 
-export const saveRow = async (baseUrl: string, api: GridApi, data: any, newValue: any, oldValue: any) => {
+export const saveNewRow = async (
+    url: string,
+    api: GridApi,
+    data: any,
+    node: any,
+    emptyRow: any
+): Promise<any> => {
+    try {
+        const response = await fetch(url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCookie('csrftoken') || '',
+            },
+            body: JSON.stringify(data),
+        });
+
+        if (!response.ok) {
+            return {success: false, error: `Ошибка при добавлении: ${response.status}`};
+        }
+
+        const newRecord = await response.json();
+
+        const updatedData = {...node.data, id: newRecord.id};
+        node.setData(updatedData);
+        api.applyTransaction({
+            add: [emptyRow],
+            addIndex: api.getDisplayedRowCount()
+        });
+
+        return newRecord;
+    } catch (error) {
+        console.error('Ошибка при сохранении новой записи:', error);
+        throw error;
+    }
+};
+
+export const keepNewRowAtBottom = (
+    params: any,
+): void => {
+    const nodes = params.nodes;
+    const newRowNode = nodes.find((node: any) => node.data?.id === -2);
+
+    if (newRowNode) {
+        nodes.splice(nodes.indexOf(newRowNode), 1);
+        nodes.push(newRowNode);
+    }
+
+    params.nodes = nodes;
+};
+
+
+export const updateRow = async (baseUrl: string, api: GridApi, data: any, newValue: any, oldValue: any) => {
     if (oldValue === newValue) return;
 
     try {
@@ -175,13 +227,13 @@ export const saveRow = async (baseUrl: string, api: GridApi, data: any, newValue
         });
 
         if (!response.ok) {
-            return { success: false, error: `Ошибка при сохранении: ${response.status}` };
+            return {success: false, error: `Ошибка при сохранении: ${response.status}`};
         }
     } catch (error) {
-        console.error('Ошибка при сохранении данных:', error);
-
         api.stopEditing();
         api.undoCellEditing();
+
+        console.error('Ошибка при сохранении данных:', error);
     }
 };
 
@@ -229,7 +281,7 @@ export const deleteSelectedRows = (
                     });
 
                     api.deselectAll();
-                    api.refreshCells()
+                    api.refreshCells();
 
                 })
                 .catch(error => {

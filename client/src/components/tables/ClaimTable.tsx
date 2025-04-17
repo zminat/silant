@@ -12,7 +12,9 @@ import {
     createDateColumn,
     createSerialNumberColumn,
     createReferenceColumn,
-    saveRow
+    saveNewRow,
+    updateRow,
+    keepNewRowAtBottom
 } from "./Helpers.tsx";
 
 ModuleRegistry.registerModules([AllCommunityModule]);
@@ -37,8 +39,22 @@ export const ClaimTable: FC<ClaimTableProps> = ({
             permissions.can_delete)
     }), [permissions]);
 
+    const createEmptyRow = () => {
+        return {
+            id: -2,
+            machineId: -2,
+            failureDate: '',
+            operatingTime: undefined,
+            failureNodeId: -2,
+            failureDescription: '',
+            recoveryMethodId: -2,
+            sparePartsUsed: '',
+            recoveryDate: '',
+        };
+    }
+
     const rowData = useMemo(() => {
-        return claims.map((claim) => ({
+        const preparedData = claims.map((claim) => ({
             id: claim.id,
             machineId: claim.machine_id,
             failureDate: claim.failure_date,
@@ -49,6 +65,10 @@ export const ClaimTable: FC<ClaimTableProps> = ({
             sparePartsUsed: claim.spare_parts_used,
             recoveryDate: claim.recovery_date,
         }));
+        if (permissions.can_create) {
+            preparedData.push(createEmptyRow());
+        }
+        return preparedData;
     }, [claims]);
 
     const machineOptions = useMemo(() =>
@@ -105,10 +125,8 @@ export const ClaimTable: FC<ClaimTableProps> = ({
         }
     ], [machineOptions, failureNodeOptions, recoveryMethodOptions]);
 
-    const onCellValueChanged = (params: any) => {
-        const {data, newValue, oldValue, api} = params;
-
-        const convertedData = {
+    const convertData = (data: any) => {
+        return {
             id: data.id,
             machine: data.machineId,
             failure_date: data.failureDate,
@@ -119,8 +137,31 @@ export const ClaimTable: FC<ClaimTableProps> = ({
             spare_parts_used: data.sparePartsUsed,
             recovery_date: data.recoveryDate
         };
+    }
 
-        saveRow('/api/claims', api, convertedData, oldValue, newValue);
+    const checkRequiredFields = (data: any) => {
+        return data.machineId !== -2 &&
+            data.failureDate !== '' &&
+            data.operatingTime !== undefined &&
+            data.failureNodeId !== -2 &&
+            data.failureDescription !== '' &&
+            data.recoveryMethodId !== -2 &&
+            data.recoveryDate !== '';
+    }
+
+    const onCellValueChanged = (params: any) => {
+        const {data, node, newValue, oldValue, api} = params;
+
+        if (data.id !== -2) {
+            const convertedData = convertData(data);
+            updateRow('/api/claims', api, convertedData, oldValue, newValue);
+            return;
+        }
+
+        if (checkRequiredFields(data)) {
+            const convertedData = convertData(data);
+            saveNewRow('/api/claims/', api, convertedData, node, createEmptyRow());
+        }
     };
 
     return (
@@ -135,6 +176,7 @@ export const ClaimTable: FC<ClaimTableProps> = ({
             headerHeight={40}
             rowSelection='multiple'
             onCellValueChanged={onCellValueChanged}
+            postSortRows={keepNewRowAtBottom}
         />
     );
 };

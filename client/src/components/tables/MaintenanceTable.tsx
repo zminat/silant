@@ -13,7 +13,9 @@ import {
     createSerialNumberColumn,
     createReferenceColumn,
     createCompanyColumn,
-    saveRow
+    saveNewRow,
+    updateRow,
+    keepNewRowAtBottom
 } from "./Helpers.tsx";
 
 ModuleRegistry.registerModules([AllCommunityModule]);
@@ -38,8 +40,21 @@ export const MaintenanceTable: FC<MaintenanceTableProps> = ({
             permissions.can_delete)
     }), [permissions]);
 
+    const createEmptyRow = () => {
+        return {
+            id: -2,
+            machineId: -2,
+            maintenanceTypeId: -2,
+            maintenanceDate: '',
+            operatingTime: undefined,
+            orderNumber: '',
+            orderDate: '',
+            organizationId: -2,
+        };
+    }
+
     const rowData = useMemo(() => {
-        return maintenances.map((maintenance) => ({
+        const preparedData = maintenances.map((maintenance) => ({
             id: maintenance.id,
             machineId: maintenance.machine_id,
             maintenanceTypeId: maintenance.maintenance_type_id,
@@ -49,7 +64,11 @@ export const MaintenanceTable: FC<MaintenanceTableProps> = ({
             orderDate: maintenance.order_date,
             organizationId: maintenance.organization_id ?? -1
         }));
-    }, [maintenances]);
+        if (permissions.can_create) {
+            preparedData.push(createEmptyRow());
+        }
+        return preparedData;
+    }, [maintenances, permissions.can_create]);
 
     const machineOptions = useMemo(() =>
             createSerialNumberOptionsFromDictionary(dictionaries.machines),
@@ -86,10 +105,8 @@ export const MaintenanceTable: FC<MaintenanceTableProps> = ({
         createCompanyColumn('Организация, проводившая ТО', 'organizationId', organizationOptions, '/service-companies')
     ], [machineOptions, maintenanceTypeOptions, organizationOptions]);
 
-    const onCellValueChanged = (params: any) => {
-        const {data, newValue, oldValue, api} = params;
-
-        const convertedData = {
+    const convertData = (data: any) => {
+        return {
             id: data.id,
             machine: data.machineId,
             maintenance_type: data.maintenanceTypeId,
@@ -99,8 +116,31 @@ export const MaintenanceTable: FC<MaintenanceTableProps> = ({
             order_date: data.orderDate,
             organization: data.organizationId !== -1 ? data.organizationId : null,
         };
+    }
 
-        saveRow('/api/maintenances', api, convertedData, oldValue, newValue);
+    const checkRequiredFields = (data: any) => {
+        return data.machineId !== -2 &&
+            data.maintenanceTypeId !== -2 &&
+            data.maintenanceDate !== '' &&
+            data.operatingTime !== undefined &&
+            data.orderNumber !== '' &&
+            data.orderDate !== -2 &&
+            data.organizationId !== -2;
+    }
+
+    const onCellValueChanged = (params: any) => {
+        const {data, node, newValue, oldValue, api} = params;
+
+        if (data.id !== -2) {
+            const convertedData = convertData(data);
+            updateRow('/api/maintenances', api, convertedData, oldValue, newValue);
+            return;
+        }
+
+        if (checkRequiredFields(data)) {
+            const convertedData = convertData(data);
+            saveNewRow('/api/maintenances/', api, convertedData, node, createEmptyRow());
+        }
     };
 
     return (
@@ -115,6 +155,7 @@ export const MaintenanceTable: FC<MaintenanceTableProps> = ({
             headerHeight={40}
             rowSelection='multiple'
             onCellValueChanged={onCellValueChanged}
+            postSortRows={keepNewRowAtBottom}
         />
     );
 };

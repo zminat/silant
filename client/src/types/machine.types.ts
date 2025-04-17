@@ -49,10 +49,10 @@ export interface MaintenanceData {
     machine_id: number;
     maintenance_type_id: number;
     maintenance_date: string;
-    operating_time: number;
+    operating_time?: number;
     order_number: string;
     order_date: string;
-    organization_id: string;
+    organization_id?: number;
 }
 
 export interface MaintenanceTableProps {
@@ -69,7 +69,7 @@ export interface ClaimData {
     id: number;
     machine_id: number;
     failure_date: string;
-    operating_time: number;
+    operating_time?: number;
     failure_node_id: number;
     failure_description: string;
     recovery_method_id: number;
