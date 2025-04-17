@@ -27,28 +27,37 @@ const Main = () => {
 
     const fetchMachineData = async () => {
         try {
+            setLoading(true);
             const data = await fetchData('/api/machines/', 'Ошибка при получении данных о машинах');
             setMachines(data);
         } catch (err) {
-            console.error('Ошибка при получении данных о машинах:', err);
+            handleError(err);
+        } finally {
+            setLoading(false);
         }
     };
 
     const fetchMaintenanceData = async () => {
         try {
+            setLoading(true);
             const data = await fetchData('/api/maintenances/', 'Ошибка при получении данных о ТО');
             setMaintenances(data);
         } catch (err) {
-            console.error('Ошибка при получении данных о ТО:', err);
+            handleError(err);
+        } finally {
+            setLoading(false);
         }
     };
 
     const fetchClaimData = async () => {
         try {
+            setLoading(true);
             const data = await fetchData('/api/claims/', 'Ошибка при получении данных о рекламациях');
             setClaims(data);
         } catch (err) {
-            console.error('Ошибка при получении данных о рекламациях:', err);
+            handleError(err);
+        } finally {
+            setLoading(false);
         }
     };
 
@@ -64,9 +73,12 @@ const Main = () => {
 
         try {
             if (isLoggedIn) {
-                await fetchMachineData();
-                await fetchMaintenanceData();
-                await fetchClaimData();
+                setLoading(true);
+                await Promise.all([
+                    fetchMachineData(),
+                    fetchMaintenanceData(),
+                    fetchClaimData()
+                ]);
             }
         } catch (err) {
             handleError(err);
@@ -80,6 +92,7 @@ const Main = () => {
 
         try {
             if (!isLoggedIn) {
+                setLoading(true);
                 if (!serialNumber.trim()) {
                     setError('Введите заводской номер');
                     return;
